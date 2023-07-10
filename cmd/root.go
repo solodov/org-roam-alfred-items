@@ -56,7 +56,7 @@ var rootCmd = &cobra.Command{
 			}
 		}
 		sort.Slice(nodes, func(i, j int) bool {
-			return nodes[i].Olp < nodes[j].Olp
+			return nodes[i].Title < nodes[j].Title
 		})
 		result := struct {
 			Items []node.Node `json:"items"`

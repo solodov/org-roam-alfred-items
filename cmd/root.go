@@ -41,13 +41,11 @@ var rootCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-		var id string
-		var level int
-		var props string
-		var path string
-		var fileTitle string
-		var nodeTitle string
-		var olp sql.NullString
+		var (
+			level                                 int
+			id, props, path, fileTitle, nodeTitle string
+			olp                                   sql.NullString
+		)
 		nodes := []node.Node{}
 		for rows.Next() {
 			if err := rows.Scan(&id, &level, &props, &path, &fileTitle, &nodeTitle, &olp); err != nil {

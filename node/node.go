@@ -19,6 +19,7 @@ type Node struct {
 	Title    string
 	tags     []string
 	category string
+	isBoring bool
 }
 
 func New(id string, level int, props, path, fileTitle, nodeTitle string, nodeOlp sql.NullString) Node {
@@ -27,13 +28,16 @@ func New(id string, level int, props, path, fileTitle, nodeTitle string, nodeOlp
 		category = s[1]
 	}
 	tags := []string{}
+	isBoring := false
 	if s := tagsRe.FindStringSubmatch(props); len(s) > 0 {
 		for _, t := range strings.Split(s[1], ":") {
 			tags = append(tags, t)
+			isBoring = isBoring || (t == "ARCHIVE")
 		}
 	}
 	sort.Strings(tags)
 	olpParts := []string{strings.Trim(fileTitle, `"`)}
+	isBoring = isBoring || strings.HasPrefix(olpParts[0], "drive-shard")
 	if level > 0 {
 		if nodeOlp.Valid {
 			for _, s := range olpRe.FindAllStringSubmatch(nodeOlp.String, -1) {
@@ -73,19 +77,10 @@ func (n Node) MarshalJSON() ([]byte, error) {
 	}{n.Id, n.Title, n.Id, n.Path})
 }
 
-func (n Node) IsBoring() bool {
-	for _, t := range n.tags {
-		if t == "ARCHIVE" {
-			return true
-		}
-	}
-	if strings.HasPrefix(n.olp, "drive-shard") {
-		return true
-	}
-	return false
-}
-
 func (n Node) Match(r *regexp.Regexp) bool {
+	if n.isBoring {
+		return false
+	}
 	if r == nil {
 		return true
 	}

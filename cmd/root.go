@@ -57,7 +57,7 @@ var rootCmd = &cobra.Command{
 			if err := rows.Scan(&id, &level, &props, &path, &fileTitle, &nodeTitle, &olp); err != nil {
 				log.Fatal(err)
 			}
-			if n := node.New(id, level, props, path, fileTitle, nodeTitle, olp); !n.IsBoring() && n.Match(titleRe) {
+			if n := node.New(id, level, props, path, fileTitle, nodeTitle, olp); n.Match(titleRe) {
 				result.Items = append(result.Items, n)
 			}
 		}

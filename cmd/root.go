@@ -46,21 +46,20 @@ var rootCmd = &cobra.Command{
 			id, props, path, fileTitle, nodeTitle string
 			olp                                   sql.NullString
 		)
-		nodes := []node.Node{}
+		result := struct {
+			Items []node.Node `json:"items"`
+		}{}
 		for rows.Next() {
 			if err := rows.Scan(&id, &level, &props, &path, &fileTitle, &nodeTitle, &olp); err != nil {
 				log.Fatal(err)
 			}
 			if n := node.New(id, level, props, path, fileTitle, nodeTitle, olp); !n.IsBoring() && n.Match(titleRe) {
-				nodes = append(nodes, n)
+				result.Items = append(result.Items, n)
 			}
 		}
-		sort.Slice(nodes, func(i, j int) bool {
-			return nodes[i].Title < nodes[j].Title
+		sort.Slice(result.Items, func(i, j int) bool {
+			return result.Items[i].Title < result.Items[j].Title
 		})
-		result := struct {
-			Items []node.Node `json:"items"`
-		}{nodes}
 		if jsonResult, err := json.Marshal(result); err != nil {
 			log.Fatal(err)
 		} else {

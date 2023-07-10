@@ -15,10 +15,10 @@ import (
 type Node struct {
 	Id       string
 	Path     string
-	Olp      string
+	olp      string
 	Title    string
-	Tags     []string
-	Category string
+	tags     []string
+	category string
 }
 
 func New(id string, level int, props, path, fileTitle, nodeTitle string, nodeOlp sql.NullString) Node {
@@ -57,10 +57,10 @@ func New(id string, level int, props, path, fileTitle, nodeTitle string, nodeOlp
 	return Node{
 		Id:       strings.Trim(id, `"`),
 		Path:     strings.Trim(path, `"`),
-		Olp:      olp,
+		olp:      olp,
 		Title:    titleBuilder.String(),
-		Tags:     tags,
-		Category: category,
+		tags:     tags,
+		category: category,
 	}
 }
 
@@ -74,12 +74,12 @@ func (n Node) MarshalJSON() ([]byte, error) {
 }
 
 func (n Node) IsBoring() bool {
-	for _, t := range n.Tags {
+	for _, t := range n.tags {
 		if t == "ARCHIVE" {
 			return true
 		}
 	}
-	if strings.HasPrefix(n.Olp, "drive-shard") {
+	if strings.HasPrefix(n.olp, "drive-shard") {
 		return true
 	}
 	return false

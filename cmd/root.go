@@ -10,36 +10,13 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
-	"reflect"
 	"regexp"
 	"strings"
 
-	// "regexp"
-	// "strings"
-
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/solodov/org-roam-alfred-items/node"
 	"github.com/spf13/cobra"
 )
-
-type node struct {
-	Id        string
-	Level     int
-	Props     string
-	Path      string
-	FileTitle string
-	NodeTitle string
-	Olp       sql.NullString
-}
-
-func (n *node) cleanup() {
-	v := reflect.ValueOf(n).Elem()
-	for i := 0; i < v.NumField(); i++ {
-		f := v.Field(i)
-		if f.Type().Kind() == reflect.String {
-			f.SetString(strings.Trim(f.String(), "\""))
-		}
-	}
-}
 
 var rootCmd = &cobra.Command{
 	Use:                   "org-roam-alfred-items [-c category] [regex]",
@@ -53,56 +30,43 @@ var rootCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 		defer db.Close()
-		nodeTitleMatchReStr := ""
+		var olpRe *regexp.Regexp
 		if len(args) == 1 {
 			// TODO: collapse consecutive spaces into one prior to the replacement
-			nodeTitleMatchReStr = strings.ReplaceAll(args[0], " ", ".*")
+			olpRe = regexp.MustCompile("(?i)" + strings.ReplaceAll(args[0], " ", ".*"))
 		}
-		nodeTitleMatchRe := regexp.MustCompile("(?i)" + nodeTitleMatchReStr)
-		fmt.Println(nodeTitleMatchRe)
 		rows, err := db.Query(query)
 		if err != nil {
 			log.Fatal(err)
 		}
+		var id string
+		var level int
+		var props string
+		var path string
+		var fileTitle string
+		var nodeTitle string
+		var olp sql.NullString
+		nodes := []node.Node{}
 		for rows.Next() {
-			var n node
-			if err := rows.Scan(
-				&n.Id,
-				&n.Level,
-				&n.Props,
-				&n.Path,
-				&n.FileTitle,
-				&n.NodeTitle,
-				&n.Olp,
-			); err != nil {
+			if err := rows.Scan(&id, &level, &props, &path, &fileTitle, &nodeTitle, &olp); err != nil {
 				log.Fatal(err)
 			}
-			n.cleanup()
-			if strings.HasPrefix(n.FileTitle, "drive-shard") {
+			n := node.New(id, level, props, path, fileTitle, nodeTitle, olp)
+			if n.IsBoring() {
 				continue
 			}
-			tagsRe := regexp.MustCompile(`.+"ALLTAGS" \. #\(":([^"]+):"`)
-			tags := make(map[string]bool)
-			if s := tagsRe.FindStringSubmatch(n.Props); len(s) > 0 {
-				for _, v := range strings.Split(s[1], ":") {
-					tags[v] = true
-				}
-			}
-			if _, found := tags["ARCHIVE"]; found {
+			// Any category is included regardless of the value of the category argument.
+			if n.Category != "any" && category != "" && n.Category != category {
 				continue
 			}
-			categoryRe := regexp.MustCompile(`.+"CATEGORY" \. "([^"]+)"`)
-			var category string
-			if s := categoryRe.FindStringSubmatch(n.Props); len(s) > 0 {
-				category = s[1]
-				// Any category is included regardless of the value of the category argument.
-				if category != "any" && categoryArg != "" && category != categoryArg {
-					continue
-				}
+			if olpRe == nil || (olpRe != nil && olpRe.MatchString(n.Olp)) {
+				nodes = append(nodes, n)
 			}
-			if nodeTitleMatchRe.MatchString(n.NodeTitle) {
-				fmt.Println(n.NodeTitle, category, tags)
-			}
+		}
+		// TODO: sort nodes by (length of olp, olp)
+		// TODO: output json
+		for _, n := range nodes {
+			fmt.Println(n.Olp, n.Category, n.Tags)
 		}
 	},
 }
@@ -126,10 +90,10 @@ func Execute() {
 }
 
 var dbPath string
-var categoryArg string
+var category string
 
 func init() {
 	u, _ := user.Current()
 	rootCmd.Flags().StringVar(&dbPath, "db_path", filepath.Join(u.HomeDir, "org/.roam.db"), "Path to the org roam database")
-	rootCmd.Flags().StringVarP(&categoryArg, "category", "c", "", "Limit notes to the category")
+	rootCmd.Flags().StringVarP(&category, "category", "c", "", "Limit notes to the category")
 }

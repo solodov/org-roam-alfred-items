@@ -65,13 +65,12 @@ func New(id string, level int, props, path, fileTitle, nodeTitle string, nodeOlp
 }
 
 func (n Node) MarshalJSON() ([]byte, error) {
-	jn := struct {
+	return json.Marshal(struct {
 		Uid      string `json:"uid"`
 		Title    string `json:"title"`
 		Arg      string `json:"arg"`
 		Subtitle string `json:"subtitle"`
-	}{n.Id, n.Title, n.Id, n.Path}
-	return json.Marshal(jn)
+	}{n.Id, n.Title, n.Id, n.Path})
 }
 
 func (n Node) IsBoring() bool {

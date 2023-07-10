@@ -86,14 +86,6 @@ func (n Node) IsBoring() bool {
 	return false
 }
 
-func (n Node) MatchCategory(c string) bool {
-	// Any category is included regardless of the value of the category argument.
-	if c == "" || n.Category == "any" {
-		return true
-	}
-	return n.Category == c
-}
-
 func (n Node) Match(r *regexp.Regexp) bool {
 	if r == nil {
 		return true

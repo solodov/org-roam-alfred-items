@@ -54,7 +54,7 @@ var rootCmd = &cobra.Command{
 				log.Fatal(err)
 			}
 			n := node.New(id, level, props, path, fileTitle, nodeTitle, olp)
-			if n.IsBoring() || !n.MatchCategory(category) || !n.Match(titleRe) {
+			if n.IsBoring() || !n.Match(titleRe) {
 				continue
 			}
 			nodes = append(nodes, n)
@@ -92,10 +92,8 @@ func Execute() {
 }
 
 var dbPath string
-var category string
 
 func init() {
 	u, _ := user.Current()
 	rootCmd.Flags().StringVar(&dbPath, "db_path", filepath.Join(u.HomeDir, "org/.roam.db"), "Path to the org roam database")
-	rootCmd.Flags().StringVarP(&category, "category", "c", "", "Limit notes to the category")
 }

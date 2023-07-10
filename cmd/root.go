@@ -52,16 +52,10 @@ var rootCmd = &cobra.Command{
 				log.Fatal(err)
 			}
 			n := node.New(id, level, props, path, fileTitle, nodeTitle, olp)
-			if n.IsBoring() {
+			if n.IsBoring() || !n.MatchCategory(category) || !n.MatchOlp(olpRe) {
 				continue
 			}
-			// Any category is included regardless of the value of the category argument.
-			if n.Category != "any" && category != "" && n.Category != category {
-				continue
-			}
-			if olpRe == nil || (olpRe != nil && olpRe.MatchString(n.Olp)) {
-				nodes = append(nodes, n)
-			}
+			nodes = append(nodes, n)
 		}
 		// TODO: sort nodes by (length of olp, olp)
 		// TODO: output json

@@ -51,11 +51,9 @@ var rootCmd = &cobra.Command{
 			if err := rows.Scan(&id, &level, &props, &path, &fileTitle, &nodeTitle, &olp); err != nil {
 				log.Fatal(err)
 			}
-			n := node.New(id, level, props, path, fileTitle, nodeTitle, olp)
-			if n.IsBoring() || !n.Match(titleRe) {
-				continue
+			if n := node.New(id, level, props, path, fileTitle, nodeTitle, olp); !n.IsBoring() && n.Match(titleRe) {
+				nodes = append(nodes, n)
 			}
-			nodes = append(nodes, n)
 		}
 		sort.Slice(nodes, func(i, j int) bool {
 			return nodes[i].Olp < nodes[j].Olp
@@ -63,10 +61,10 @@ var rootCmd = &cobra.Command{
 		result := struct {
 			Items []node.Node `json:"items"`
 		}{nodes}
-		if encodedResult, err := json.Marshal(result); err != nil {
+		if jsonResult, err := json.Marshal(result); err != nil {
 			log.Fatal(err)
 		} else {
-			fmt.Println(string(encodedResult))
+			fmt.Println(string(jsonResult))
 		}
 	},
 }

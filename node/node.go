@@ -92,7 +92,11 @@ func (n Node) Match(r *regexp.Regexp) bool {
 	return r.MatchString(n.Title)
 }
 
-var catRe, tagsRe, olpRe *regexp.Regexp
+var (
+	catRe,
+	tagsRe,
+	olpRe *regexp.Regexp
+)
 
 func init() {
 	catRe = regexp.MustCompile(`.+"CATEGORY" \. "([^"]+)"`)

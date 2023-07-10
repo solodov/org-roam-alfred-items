@@ -5,12 +5,14 @@ package cmd
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
 	"os/user"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -30,10 +32,10 @@ var rootCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 		defer db.Close()
-		var olpRe *regexp.Regexp
+		var titleRe *regexp.Regexp
 		if len(args) == 1 {
 			// TODO: collapse consecutive spaces into one prior to the replacement
-			olpRe = regexp.MustCompile("(?i)" + strings.ReplaceAll(args[0], " ", ".*"))
+			titleRe = regexp.MustCompile("(?i)" + strings.ReplaceAll(args[0], " ", ".*"))
 		}
 		rows, err := db.Query(query)
 		if err != nil {
@@ -52,15 +54,21 @@ var rootCmd = &cobra.Command{
 				log.Fatal(err)
 			}
 			n := node.New(id, level, props, path, fileTitle, nodeTitle, olp)
-			if n.IsBoring() || !n.MatchCategory(category) || !n.MatchOlp(olpRe) {
+			if n.IsBoring() || !n.MatchCategory(category) || !n.Match(titleRe) {
 				continue
 			}
 			nodes = append(nodes, n)
 		}
-		// TODO: sort nodes by (length of olp, olp)
-		// TODO: output json
-		for _, n := range nodes {
-			fmt.Println(n.Olp, n.Category, n.Tags)
+		sort.Slice(nodes, func(i, j int) bool {
+			return nodes[i].Olp < nodes[j].Olp
+		})
+		result := struct {
+			Items []node.Node `json:"items"`
+		}{nodes}
+		if encodedResult, err := json.Marshal(result); err != nil {
+			log.Fatal(err)
+		} else {
+			fmt.Println(string(encodedResult))
 		}
 	},
 }

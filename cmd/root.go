@@ -4,9 +4,11 @@ Copyright © 2023 Peter Solodov <solodov@gmail.com>
 package cmd
 
 import (
+	"database/sql"
 	"os"
 	"os/user"
 	"path/filepath"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -25,6 +27,19 @@ func Execute() {
 }
 
 var dbPath, category string
+
+func scan(rows *sql.Rows, args ...any) error {
+	if err := rows.Scan(args...); err != nil {
+		return err
+	}
+	for _, a := range args {
+		v, ok := a.(*string)
+		if ok {
+			*v = strings.ReplaceAll(strings.Trim(*v, `"`), `\"`, `"`)
+		}
+	}
+	return nil
+}
 
 func init() {
 	u, _ := user.Current()

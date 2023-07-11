@@ -22,6 +22,7 @@ var nodesCmd = &cobra.Command{
 	DisableFlagsInUseLine: true,
 	Short:                 "Find matching org roam nodes and output them as alfred items",
 	Long:                  "Find matching org roam nodes and output them as alfred items",
+	Args:                  cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		db, err := sql.Open("sqlite3", dbPath)
 		if err != nil {
@@ -33,7 +34,7 @@ var nodesCmd = &cobra.Command{
 			// TODO: collapse consecutive spaces into one prior to the replacement
 			titleRe = regexp.MustCompile("(?i)" + strings.ReplaceAll(args[0], " ", ".*"))
 		}
-		rows, err := db.Query(query)
+		rows, err := db.Query(nodeQuery)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -50,7 +51,7 @@ var nodesCmd = &cobra.Command{
 			if err := scan(rows, &id, &level, &props, &fileTitle, &nodeTitle, &olp); err != nil {
 				log.Fatal(err)
 			}
-			if node := node.New(id, level, props, fileTitle, nodeTitle, olp); matches(node, titleRe) {
+			if node := node.New(id, level, props, fileTitle, nodeTitle, olp); matchNode(node, titleRe) {
 				result.Items = append(result.Items, node)
 			}
 		}
@@ -65,7 +66,10 @@ var nodesCmd = &cobra.Command{
 	},
 }
 
-func matches(node node.Node, titleRe *regexp.Regexp) bool {
+func matchNode(node node.Node, titleRe *regexp.Regexp) bool {
+	if category != "" && node.Props.Category != "any" && node.Props.Category != category {
+		return false
+	}
 	for _, tag := range []string{"ARCHIVE", "feeds", "chrome_link"} {
 		if _, found := node.Props.Tags[tag]; found {
 			return false
@@ -80,20 +84,7 @@ func matches(node node.Node, titleRe *regexp.Regexp) bool {
 	return titleRe.MatchString(node.Title)
 }
 
-func scan(rows *sql.Rows, args ...any) error {
-	if err := rows.Scan(args...); err != nil {
-		return err
-	}
-	for _, a := range args {
-		v, ok := a.(*string)
-		if ok {
-			*v = strings.ReplaceAll(strings.Trim(*v, `"`), `\"`, `"`)
-		}
-	}
-	return nil
-}
-
-const query = `SELECT
+const nodeQuery = `SELECT
   nodes.id,
   nodes.level,
   nodes.properties,

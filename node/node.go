@@ -74,6 +74,14 @@ type Props struct {
 	Tags            map[string]bool
 }
 
+func (props *Props) ItemLinkData() (string, string, error) {
+	re := regexp.MustCompile(`\[\[([^\]]+)\]\[([^\]]+)\]\]`)
+	if groups := re.FindStringSubmatch(props.Item); len(groups) > 0 {
+		return groups[1], groups[2], nil
+	}
+	return "", "", errors.New("not a proper link")
+}
+
 func (props *Props) Scan(src any) error {
 	val, ok := src.(string)
 	if !ok {

@@ -64,10 +64,10 @@ var rootCmd = &cobra.Command{
 		sort.Slice(result.Items, func(i, j int) bool {
 			return result.Items[i].Title < result.Items[j].Title
 		})
-		if jsonResult, err := json.Marshal(result); err != nil {
+		if res, err := json.Marshal(result); err != nil {
 			log.Fatal(err)
 		} else {
-			fmt.Println(string(jsonResult))
+			fmt.Println(string(res))
 		}
 	},
 }

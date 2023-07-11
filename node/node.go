@@ -92,9 +92,7 @@ func (p *Props) Scan(src any) error {
 	}
 	p.Tags = nil
 	if matches := tagsRe.FindStringSubmatch(strVal); len(matches) > 0 {
-		for _, tag := range strings.Split(matches[1], ":") {
-			p.Tags = append(p.Tags, tag)
-		}
+		p.Tags = strings.Split(matches[1], ":")
 	}
 	sort.Strings(p.Tags)
 	return nil

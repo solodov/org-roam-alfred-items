@@ -15,16 +15,18 @@ import (
 )
 
 type Node struct {
-	Id         string
-	Path       string
-	olp        string
-	Title      string
-	Properties Props
-	isBoring   bool
+	Id       string
+	Title    string
+	Props    Props
+	isBoring bool
 }
 
-func New(id string, level int, props Props, path, fileTitle, nodeTitle string, nodeOlp sql.NullString) Node {
+func New(id string, level int, props Props, fileTitle, nodeTitle string, nodeOlp sql.NullString) Node {
 	isBoring := strings.HasPrefix(fileTitle, "drive-shard")
+	var titleBuilder strings.Builder
+	if props.Category != "" {
+		fmt.Fprint(&titleBuilder, props.Category, ": ")
+	}
 	olpParts := []string{fileTitle}
 	if level > 0 {
 		if nodeOlp.Valid {
@@ -34,26 +36,19 @@ func New(id string, level int, props Props, path, fileTitle, nodeTitle string, n
 		}
 		olpParts = append(olpParts, nodeTitle)
 	}
-	olp := strings.Join(olpParts, " > ")
-	var titleBuilder strings.Builder
-	if props.Category != "" {
-		fmt.Fprintf(&titleBuilder, "%v: ", props.Category)
-	}
-	fmt.Fprint(&titleBuilder, olp)
+	fmt.Fprint(&titleBuilder, strings.Join(olpParts, " > "))
 	if len(props.Tags) > 0 {
 		fmt.Fprint(&titleBuilder, " ")
 		for _, t := range props.Tags {
-			fmt.Fprintf(&titleBuilder, " #%v", t)
+			fmt.Fprint(&titleBuilder, " #", t)
 			isBoring = isBoring || t == "ARCHIVE"
 		}
 	}
 	return Node{
-		Id:         id,
-		Path:       path,
-		olp:        olp,
-		Title:      titleBuilder.String(),
-		Properties: props,
-		isBoring:   isBoring,
+		Id:       id,
+		Title:    titleBuilder.String(),
+		Props:    props,
+		isBoring: isBoring,
 	}
 }
 
@@ -63,7 +58,7 @@ func (n Node) MarshalJSON() ([]byte, error) {
 		Title    string `json:"title"`
 		Arg      string `json:"arg"`
 		Subtitle string `json:"subtitle"`
-	}{n.Id, n.Title, n.Id, n.Path})
+	}{n.Id, n.Title, n.Id, n.Props.Path})
 }
 
 func (n Node) Match(r *regexp.Regexp) bool {
@@ -77,6 +72,7 @@ func (n Node) Match(r *regexp.Regexp) bool {
 }
 
 type Props struct {
+	Path     string
 	Category string
 	Tags     []string
 }
@@ -85,6 +81,10 @@ func (p *Props) Scan(src any) error {
 	strVal, ok := src.(string)
 	if !ok {
 		return errors.New(fmt.Sprint("wrong source type, want string, got", reflect.TypeOf(src)))
+	}
+	p.Path = ""
+	if matches := fileRe.FindStringSubmatch(strVal); len(matches) > 0 {
+		p.Path = matches[1]
 	}
 	p.Category = ""
 	if matches := catRe.FindStringSubmatch(strVal); len(matches) > 0 {
@@ -100,12 +100,14 @@ func (p *Props) Scan(src any) error {
 
 var (
 	catRe,
+	fileRe,
 	tagsRe,
 	olpRe *regexp.Regexp
 )
 
 func init() {
 	catRe = regexp.MustCompile(`.+"CATEGORY" \. "([^"]+)"`)
+	fileRe = regexp.MustCompile(`.+"FILE" \. "([^"]+)"`)
 	tagsRe = regexp.MustCompile(`.+"ALLTAGS" \. #\(":([^"]+):"`)
 	olpRe = regexp.MustCompile(`"((?:\\.|[^"])*)"`)
 }

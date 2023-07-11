@@ -42,19 +42,19 @@ var rootCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 		var (
-			level                          int
-			id, path, fileTitle, nodeTitle string
-			props                          node.Props
-			olp                            sql.NullString
+			level                    int
+			id, fileTitle, nodeTitle string
+			props                    node.Props
+			olp                      sql.NullString
 		)
 		result := struct {
 			Items []node.Node `json:"items"`
 		}{}
 		for rows.Next() {
-			if err := scan(rows, &id, &level, &props, &path, &fileTitle, &nodeTitle, &olp); err != nil {
+			if err := scan(rows, &id, &level, &props, &fileTitle, &nodeTitle, &olp); err != nil {
 				log.Fatal(err)
 			}
-			if n := node.New(id, level, props, path, fileTitle, nodeTitle, olp); n.Match(titleRe) {
+			if n := node.New(id, level, props, fileTitle, nodeTitle, olp); n.Match(titleRe) {
 				result.Items = append(result.Items, n)
 			}
 		}
@@ -86,7 +86,6 @@ const query = `SELECT
   nodes.id,
   nodes.level,
   nodes.properties,
-  files.file,
   files.title,
   nodes.title,
   nodes.olp

@@ -78,20 +78,20 @@ type Props struct {
 }
 
 func (p *Props) Scan(src any) error {
-	strVal, ok := src.(string)
+	val, ok := src.(string)
 	if !ok {
 		return errors.New(fmt.Sprint("wrong source type, want string, got", reflect.TypeOf(src)))
 	}
 	p.Path = ""
-	if matches := fileRe.FindStringSubmatch(strVal); len(matches) > 0 {
+	if matches := fileRe.FindStringSubmatch(val); len(matches) > 0 {
 		p.Path = matches[1]
 	}
 	p.Category = ""
-	if matches := catRe.FindStringSubmatch(strVal); len(matches) > 0 {
+	if matches := catRe.FindStringSubmatch(val); len(matches) > 0 {
 		p.Category = matches[1]
 	}
 	p.Tags = nil
-	if matches := tagsRe.FindStringSubmatch(strVal); len(matches) > 0 {
+	if matches := tagsRe.FindStringSubmatch(val); len(matches) > 0 {
 		p.Tags = strings.Split(matches[1], ":")
 	}
 	sort.Strings(p.Tags)

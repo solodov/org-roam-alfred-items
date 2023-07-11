@@ -65,6 +65,7 @@ func New(id string, level int, props, path, fileTitle, nodeTitle string, nodeOlp
 		Title:    titleBuilder.String(),
 		tags:     tags,
 		category: category,
+		isBoring: isBoring,
 	}
 }
 

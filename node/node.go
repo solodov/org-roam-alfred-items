@@ -30,11 +30,9 @@ func New(id string, level int, props Props, fileTitle, nodeTitle string, nodeOlp
 		fmt.Fprint(&titleBuilder, " > ")
 		if nodeOlp.Valid {
 			matches := olpRe.FindAllStringSubmatch(nodeOlp.String, -1)
-			for i, match := range matches {
+			for _, match := range matches {
 				fmt.Fprint(&titleBuilder, match[1])
-				if i < len(matches)-1 {
-					fmt.Fprint(&titleBuilder, " > ")
-				}
+				fmt.Fprint(&titleBuilder, " > ")
 			}
 		}
 		fmt.Fprint(&titleBuilder, nodeTitle)

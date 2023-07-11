@@ -15,14 +15,12 @@ import (
 )
 
 type Node struct {
-	Id       string
-	Title    string
-	Props    Props
-	isBoring bool
+	Id    string
+	Title string
+	Props Props
 }
 
 func New(id string, level int, props Props, fileTitle, nodeTitle string, nodeOlp sql.NullString) Node {
-	isBoring := strings.HasPrefix(fileTitle, "drive-shard")
 	var titleBuilder strings.Builder
 	if props.Category != "" {
 		fmt.Fprint(&titleBuilder, props.Category, ": ")
@@ -39,64 +37,75 @@ func New(id string, level int, props Props, fileTitle, nodeTitle string, nodeOlp
 	fmt.Fprint(&titleBuilder, strings.Join(olpParts, " > "))
 	if len(props.Tags) > 0 {
 		fmt.Fprint(&titleBuilder, " ")
-		for _, tag := range props.Tags {
+		tags := []string{}
+		for tag := range props.Tags {
+			tags = append(tags, tag)
+		}
+		sort.Strings(tags)
+		for _, tag := range tags {
 			fmt.Fprint(&titleBuilder, " #", tag)
-			// TODO: parameterize definition of boring to support extraction of chrome or feed links
-			isBoring = isBoring || tag == "ARCHIVE" || tag == "feeds" || tag == "chrome_link"
 		}
 	}
 	return Node{
-		Id:       id,
-		Title:    titleBuilder.String(),
-		Props:    props,
-		isBoring: isBoring,
+		Id:    id,
+		Title: titleBuilder.String(),
+		Props: props,
 	}
 }
 
-func (n Node) MarshalJSON() ([]byte, error) {
+func (node Node) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
 		Uid      string `json:"uid"`
 		Title    string `json:"title"`
 		Arg      string `json:"arg"`
 		Subtitle string `json:"subtitle"`
-	}{n.Id, n.Title, n.Id, n.Props.Path})
+	}{node.Id, node.Title, node.Id, node.Props.Path})
 }
 
-func (n Node) Match(r *regexp.Regexp) bool {
-	if n.isBoring {
+func (node Node) Match(titleRe *regexp.Regexp) bool {
+	// TODO: parameterize definition of boring to support extraction of chrome or feed links
+	for _, tag := range []string{"ARCHIVE", "feeds", "chrome_link"} {
+		if _, found := node.Props.Tags[tag]; found {
+			return false
+		}
+	}
+	if strings.Contains(node.Props.Path, "/drive/") {
 		return false
 	}
-	if r == nil {
+	if titleRe == nil {
 		return true
 	}
-	return r.MatchString(n.Title)
+	return titleRe.MatchString(node.Title)
 }
 
 type Props struct {
 	Path     string
 	Category string
 	// TODO: make this a set for easy lookups
-	Tags []string
+	Tags map[string]bool
 }
 
-func (p *Props) Scan(src any) error {
+func (props *Props) Scan(src any) error {
 	val, ok := src.(string)
 	if !ok {
 		return errors.New(fmt.Sprint("wrong source type, want string, got", reflect.TypeOf(src)))
 	}
-	p.Path = ""
+	props.Path = ""
 	if matches := fileRe.FindStringSubmatch(val); len(matches) > 0 {
-		p.Path = matches[1]
+		props.Path = matches[1]
 	}
-	p.Category = ""
+	props.Category = ""
 	if matches := catRe.FindStringSubmatch(val); len(matches) > 0 {
-		p.Category = matches[1]
+		props.Category = matches[1]
 	}
-	p.Tags = nil
+	// TODO: go 1.21 has new clear function that achieves the same:
+	// clear(p.Tags)
+	props.Tags = make(map[string]bool)
 	if matches := tagsRe.FindStringSubmatch(val); len(matches) > 0 {
-		p.Tags = strings.Split(matches[1], ":")
+		for _, tag := range strings.Split(matches[1], ":") {
+			props.Tags[tag] = true
+		}
 	}
-	sort.Strings(p.Tags)
 	return nil
 }
 

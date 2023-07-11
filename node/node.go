@@ -6,36 +6,25 @@ package node
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"reflect"
 	"regexp"
 	"sort"
 	"strings"
 )
 
 type Node struct {
-	Id       string
-	Path     string
-	olp      string
-	Title    string
-	tags     []string
-	category string
-	isBoring bool
+	Id         string
+	Path       string
+	olp        string
+	Title      string
+	Properties Props
+	isBoring   bool
 }
 
-func New(id string, level int, props, path, fileTitle, nodeTitle string, nodeOlp sql.NullString) Node {
-	category := ""
-	if s := catRe.FindStringSubmatch(props); len(s) > 0 {
-		category = s[1]
-	}
+func New(id string, level int, props Props, path, fileTitle, nodeTitle string, nodeOlp sql.NullString) Node {
 	isBoring := strings.HasPrefix(fileTitle, "drive-shard")
-	tags := []string{}
-	if s := tagsRe.FindStringSubmatch(props); len(s) > 0 {
-		for _, t := range strings.Split(s[1], ":") {
-			tags = append(tags, t)
-			isBoring = isBoring || (t == "ARCHIVE")
-		}
-	}
-	sort.Strings(tags)
 	olpParts := []string{fileTitle}
 	if level > 0 {
 		if nodeOlp.Valid {
@@ -47,24 +36,24 @@ func New(id string, level int, props, path, fileTitle, nodeTitle string, nodeOlp
 	}
 	olp := strings.Join(olpParts, " > ")
 	var titleBuilder strings.Builder
-	if category != "" {
-		fmt.Fprintf(&titleBuilder, "%v: ", category)
+	if props.Category != "" {
+		fmt.Fprintf(&titleBuilder, "%v: ", props.Category)
 	}
 	fmt.Fprint(&titleBuilder, olp)
-	if len(tags) > 0 {
+	if len(props.Tags) > 0 {
 		fmt.Fprint(&titleBuilder, " ")
-		for _, t := range tags {
+		for _, t := range props.Tags {
 			fmt.Fprintf(&titleBuilder, " #%v", t)
+			isBoring = isBoring || t == "ARCHIVE"
 		}
 	}
 	return Node{
-		Id:       id,
-		Path:     path,
-		olp:      olp,
-		Title:    titleBuilder.String(),
-		tags:     tags,
-		category: category,
-		isBoring: isBoring,
+		Id:         id,
+		Path:       path,
+		olp:        olp,
+		Title:      titleBuilder.String(),
+		Properties: props,
+		isBoring:   isBoring,
 	}
 }
 
@@ -85,6 +74,30 @@ func (n Node) Match(r *regexp.Regexp) bool {
 		return true
 	}
 	return r.MatchString(n.Title)
+}
+
+type Props struct {
+	Category string
+	Tags     []string
+}
+
+func (p *Props) Scan(src any) error {
+	strVal, ok := src.(string)
+	if !ok {
+		return errors.New(fmt.Sprint("wrong source type, want string, got", reflect.TypeOf(src)))
+	}
+	p.Category = ""
+	if matches := catRe.FindStringSubmatch(strVal); len(matches) > 0 {
+		p.Category = matches[1]
+	}
+	p.Tags = nil
+	if matches := tagsRe.FindStringSubmatch(strVal); len(matches) > 0 {
+		for _, tag := range strings.Split(matches[1], ":") {
+			p.Tags = append(p.Tags, tag)
+		}
+	}
+	sort.Strings(p.Tags)
+	return nil
 }
 
 var (

@@ -42,13 +42,10 @@ var rootCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 		var (
-			level int
-			id,
-			props,
-			path,
-			fileTitle,
-			nodeTitle string
-			olp sql.NullString
+			level                          int
+			id, path, fileTitle, nodeTitle string
+			props                          node.Props
+			olp                            sql.NullString
 		)
 		result := struct {
 			Items []node.Node `json:"items"`

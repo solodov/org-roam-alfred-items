@@ -41,7 +41,7 @@ func New(id string, level int, props, path, fileTitle, nodeTitle string, nodeOlp
 	if level > 0 {
 		if nodeOlp.Valid {
 			for _, s := range olpRe.FindAllStringSubmatch(nodeOlp.String, -1) {
-				olpParts = append(olpParts, strings.Trim(s[0], `"`))
+				olpParts = append(olpParts, s[1])
 			}
 		}
 		olpParts = append(olpParts, strings.Trim(nodeTitle, `"`))
@@ -97,5 +97,5 @@ var (
 func init() {
 	catRe = regexp.MustCompile(`.+"CATEGORY" \. "([^"]+)"`)
 	tagsRe = regexp.MustCompile(`.+"ALLTAGS" \. #\(":([^"]+):"`)
-	olpRe = regexp.MustCompile(`"(?:\\.|[^\\"])*"`)
+	olpRe = regexp.MustCompile(`"((?:\\.|[^"])*)"`)
 }

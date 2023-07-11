@@ -27,8 +27,8 @@ func New(id string, level int, props, path, fileTitle, nodeTitle string, nodeOlp
 	if s := catRe.FindStringSubmatch(props); len(s) > 0 {
 		category = s[1]
 	}
+	isBoring := strings.HasPrefix(fileTitle, "drive-shard")
 	tags := []string{}
-	isBoring := false
 	if s := tagsRe.FindStringSubmatch(props); len(s) > 0 {
 		for _, t := range strings.Split(s[1], ":") {
 			tags = append(tags, t)
@@ -36,15 +36,14 @@ func New(id string, level int, props, path, fileTitle, nodeTitle string, nodeOlp
 		}
 	}
 	sort.Strings(tags)
-	olpParts := []string{strings.Trim(fileTitle, `"`)}
-	isBoring = isBoring || strings.HasPrefix(olpParts[0], "drive-shard")
+	olpParts := []string{fileTitle}
 	if level > 0 {
 		if nodeOlp.Valid {
 			for _, s := range olpRe.FindAllStringSubmatch(nodeOlp.String, -1) {
 				olpParts = append(olpParts, s[1])
 			}
 		}
-		olpParts = append(olpParts, strings.Trim(nodeTitle, `"`))
+		olpParts = append(olpParts, nodeTitle)
 	}
 	olp := strings.Join(olpParts, " > ")
 	var titleBuilder strings.Builder
@@ -59,8 +58,8 @@ func New(id string, level int, props, path, fileTitle, nodeTitle string, nodeOlp
 		}
 	}
 	return Node{
-		Id:       strings.Trim(id, `"`),
-		Path:     strings.Trim(path, `"`),
+		Id:       id,
+		Path:     path,
 		olp:      olp,
 		Title:    titleBuilder.String(),
 		tags:     tags,

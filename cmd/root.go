@@ -54,7 +54,7 @@ var rootCmd = &cobra.Command{
 			Items []node.Node `json:"items"`
 		}{}
 		for rows.Next() {
-			if err := rows.Scan(&id, &level, &props, &path, &fileTitle, &nodeTitle, &olp); err != nil {
+			if err := scan(rows, &id, &level, &props, &path, &fileTitle, &nodeTitle, &olp); err != nil {
 				log.Fatal(err)
 			}
 			if n := node.New(id, level, props, path, fileTitle, nodeTitle, olp); n.Match(titleRe) {
@@ -70,6 +70,19 @@ var rootCmd = &cobra.Command{
 			fmt.Println(string(jsonResult))
 		}
 	},
+}
+
+func scan(rows *sql.Rows, args ...any) error {
+	if err := rows.Scan(args...); err != nil {
+		return err
+	}
+	for _, a := range args {
+		v, ok := a.(*string)
+		if ok {
+			*v = strings.Trim(*v, `"`)
+		}
+	}
+	return nil
 }
 
 const query = `SELECT

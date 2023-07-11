@@ -1,0 +1,17 @@
+* Support for chrome items
+Python implementation parses the file and extracts sections. However roam maintains all this
+data in its database.
+
+The biggest annoyance of the python implementation is speed. It's slow enough that when I
+press enter it still processes input. This causes chrome searches to have characters cut
+off.
+
+Removing the need to parse and relying entirely on the roam database allows for an easy go
+rewrite that will be fast enough. And it also doesn't require implementing org parser in go.
+
+This feature will require re-enabling roam for the chrome file, which will have a negative
+side-effect of making these links available in find UI. There seems to be a way to deal with
+this by creating a filter, see
+https://www.reddit.com/r/emacs/comments/p6w3dx/org_roam_can_i_filtercomplete_on_a_subset_based/. For
+the purpose of this integration the filter will pass all nodes unless they are in chrome.org
+file and level is greater than 0.

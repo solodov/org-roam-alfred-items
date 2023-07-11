@@ -76,7 +76,7 @@ func scan(rows *sql.Rows, args ...any) error {
 	for _, a := range args {
 		v, ok := a.(*string)
 		if ok {
-			*v = strings.Trim(*v, `"`)
+			*v = strings.ReplaceAll(strings.Trim(*v, `"`), `\"`, `"`)
 		}
 	}
 	return nil

@@ -83,9 +83,13 @@ func (node Node) Match(titleRe *regexp.Regexp) bool {
 }
 
 type Props struct {
-	Path     string
-	Category string
-	Tags     map[string]bool
+	Path            string
+	Category        string
+	Item            string
+	Aliases         string
+	Icon            string
+	BrowserOverride string
+	Tags            map[string]bool
 }
 
 func (props *Props) Scan(src any) error {
@@ -93,13 +97,23 @@ func (props *Props) Scan(src any) error {
 	if !ok {
 		return errors.New(fmt.Sprint("wrong source type, want string, got", reflect.TypeOf(src)))
 	}
-	props.Path = ""
-	if matches := fileRe.FindStringSubmatch(val); len(matches) > 0 {
-		props.Path = matches[1]
+	matchDests := map[string]*string{
+		"FILE":             &props.Path,
+		"CATEGORY":         &props.Category,
+		"ITEM":             &props.Item,
+		"ALIASES":          &props.Aliases,
+		"ICON":             &props.Icon,
+		"BROWSER_OVERRIDE": &props.BrowserOverride,
 	}
-	props.Category = ""
-	if matches := catRe.FindStringSubmatch(val); len(matches) > 0 {
-		props.Category = matches[1]
+	for _, dest := range matchDests {
+		*dest = ""
+	}
+	if matches := simplePropertyRe.FindAllStringSubmatch(val, -1); len(matches) > 0 {
+		for _, groups := range matches {
+			if dest, found := matchDests[groups[1]]; found {
+				*dest = groups[2]
+			}
+		}
 	}
 	// TODO: go 1.21 has new clear function that achieves the same:
 	// clear(p.Tags)
@@ -109,27 +123,17 @@ func (props *Props) Scan(src any) error {
 			props.Tags[tag] = true
 		}
 	}
-	// TODO: extract more properties:
-	// - ITEM is a raw link, to be used for elfeed and chrome
-	//   ("ITEM" . "[[elfeed:+makers +unread ][makers]]"))
-	// - ALIASES for chrome links
-	//   ("ALIASES" . "taxes")
-	// - ICON for chrome links
-	// - BROWSER_OVERRIDE
-	//   ("BROWSER_OVERRIDE" . "safari")
 	return nil
 }
 
 var (
-	catRe,
-	fileRe,
+	simplePropertyRe,
 	tagsRe,
 	olpRe *regexp.Regexp
 )
 
 func init() {
-	catRe = regexp.MustCompile(`"CATEGORY" \. "([^"]+)"`)
-	fileRe = regexp.MustCompile(`"FILE" \. "([^"]+)"`)
+	simplePropertyRe = regexp.MustCompile(`"([^"]+)" \. "([^"]+)"`)
 	tagsRe = regexp.MustCompile(`"ALLTAGS" \. .{0,2}":([^"]+):"`)
 	olpRe = regexp.MustCompile(`"((?:\\.|[^"])*)"`)
 }

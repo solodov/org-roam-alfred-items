@@ -66,22 +66,6 @@ func (node Node) MarshalJSON() ([]byte, error) {
 	}{node.Id, node.Title, node.Id, node.Props.Path})
 }
 
-func (node Node) Match(titleRe *regexp.Regexp) bool {
-	// TODO: parameterize definition of boring to support extraction of chrome or feed links
-	for _, tag := range []string{"ARCHIVE", "feeds", "chrome_link"} {
-		if _, found := node.Props.Tags[tag]; found {
-			return false
-		}
-	}
-	if strings.Contains(node.Props.Path, "/drive/") {
-		return false
-	}
-	if titleRe == nil {
-		return true
-	}
-	return titleRe.MatchString(node.Title)
-}
-
 type Props struct {
 	Path            string
 	Category        string

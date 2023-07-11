@@ -54,8 +54,8 @@ var rootCmd = &cobra.Command{
 			if err := scan(rows, &id, &level, &props, &fileTitle, &nodeTitle, &olp); err != nil {
 				log.Fatal(err)
 			}
-			if n := node.New(id, level, props, fileTitle, nodeTitle, olp); n.Match(titleRe) {
-				result.Items = append(result.Items, n)
+			if node := node.New(id, level, props, fileTitle, nodeTitle, olp); matches(node, titleRe) {
+				result.Items = append(result.Items, node)
 			}
 		}
 		sort.Slice(result.Items, func(i, j int) bool {
@@ -67,6 +67,21 @@ var rootCmd = &cobra.Command{
 			fmt.Println(string(res))
 		}
 	},
+}
+
+func matches(node node.Node, titleRe *regexp.Regexp) bool {
+	for _, tag := range []string{"ARCHIVE", "feeds", "chrome_link"} {
+		if _, found := node.Props.Tags[tag]; found {
+			return false
+		}
+	}
+	if strings.Contains(node.Props.Path, "/drive/") {
+		return false
+	}
+	if titleRe == nil {
+		return true
+	}
+	return titleRe.MatchString(node.Title)
 }
 
 func scan(rows *sql.Rows, args ...any) error {

@@ -25,16 +25,20 @@ func New(id string, level int, props Props, fileTitle, nodeTitle string, nodeOlp
 	if props.Category != "" {
 		fmt.Fprint(&titleBuilder, props.Category, ": ")
 	}
-	olpParts := []string{fileTitle}
+	fmt.Fprint(&titleBuilder, fileTitle)
 	if level > 0 {
+		fmt.Fprint(&titleBuilder, " > ")
 		if nodeOlp.Valid {
-			for _, s := range olpRe.FindAllStringSubmatch(nodeOlp.String, -1) {
-				olpParts = append(olpParts, s[1])
+			matches := olpRe.FindAllStringSubmatch(nodeOlp.String, -1)
+			for i, match := range matches {
+				fmt.Fprint(&titleBuilder, match[1])
+				if i < len(matches)-1 {
+					fmt.Fprint(&titleBuilder, " > ")
+				}
 			}
 		}
-		olpParts = append(olpParts, nodeTitle)
+		fmt.Fprint(&titleBuilder, nodeTitle)
 	}
-	fmt.Fprint(&titleBuilder, strings.Join(olpParts, " > "))
 	if len(props.Tags) > 0 {
 		fmt.Fprint(&titleBuilder, " ")
 		tags := []string{}

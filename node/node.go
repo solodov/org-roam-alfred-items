@@ -81,8 +81,7 @@ func (node Node) Match(titleRe *regexp.Regexp) bool {
 type Props struct {
 	Path     string
 	Category string
-	// TODO: make this a set for easy lookups
-	Tags map[string]bool
+	Tags     map[string]bool
 }
 
 func (props *Props) Scan(src any) error {

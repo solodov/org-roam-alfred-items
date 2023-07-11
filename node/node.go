@@ -109,6 +109,14 @@ func (props *Props) Scan(src any) error {
 			props.Tags[tag] = true
 		}
 	}
+	// TODO: extract more properties:
+	// - ITEM is a raw link, to be used for elfeed and chrome
+	//   ("ITEM" . "[[elfeed:+makers +unread ][makers]]"))
+	// - ALIASES for chrome links
+	//   ("ALIASES" . "taxes")
+	// - ICON for chrome links
+	// - BROWSER_OVERRIDE
+	//   ("BROWSER_OVERRIDE" . "safari")
 	return nil
 }
 

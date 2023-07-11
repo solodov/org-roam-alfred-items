@@ -39,9 +39,10 @@ func New(id string, level int, props Props, fileTitle, nodeTitle string, nodeOlp
 	fmt.Fprint(&titleBuilder, strings.Join(olpParts, " > "))
 	if len(props.Tags) > 0 {
 		fmt.Fprint(&titleBuilder, " ")
-		for _, t := range props.Tags {
-			fmt.Fprint(&titleBuilder, " #", t)
-			isBoring = isBoring || t == "ARCHIVE"
+		for _, tag := range props.Tags {
+			fmt.Fprint(&titleBuilder, " #", tag)
+			// TODO: parameterize definition of boring to support extraction of chrome or feed links
+			isBoring = isBoring || tag == "ARCHIVE" || tag == "feeds" || tag == "chrome_link"
 		}
 	}
 	return Node{
@@ -74,7 +75,8 @@ func (n Node) Match(r *regexp.Regexp) bool {
 type Props struct {
 	Path     string
 	Category string
-	Tags     []string
+	// TODO: make this a set for easy lookups
+	Tags []string
 }
 
 func (p *Props) Scan(src any) error {
@@ -106,8 +108,8 @@ var (
 )
 
 func init() {
-	catRe = regexp.MustCompile(`.+"CATEGORY" \. "([^"]+)"`)
-	fileRe = regexp.MustCompile(`.+"FILE" \. "([^"]+)"`)
-	tagsRe = regexp.MustCompile(`.+"ALLTAGS" \. #\(":([^"]+):"`)
+	catRe = regexp.MustCompile(`"CATEGORY" \. "([^"]+)"`)
+	fileRe = regexp.MustCompile(`"FILE" \. "([^"]+)"`)
+	tagsRe = regexp.MustCompile(`"ALLTAGS" \. .{0,2}":([^"]+):"`)
 	olpRe = regexp.MustCompile(`"((?:\\.|[^"])*)"`)
 }

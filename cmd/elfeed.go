@@ -16,39 +16,67 @@ import (
 )
 
 var elfeedCmd = &cobra.Command{
-	Use:                   "elfeed [--query query]",
+	Use:   "elfeed",
+	Short: "Alfred elfeed commands",
+}
+
+var elfeedItemsCmd = &cobra.Command{
+	Use:                   "items",
 	DisableFlagsInUseLine: true,
 	Short:                 "Output elfeed alfred items",
-	Long:                  "Output elfeed alfred items",
 	Run: func(cmd *cobra.Command, args []string) {
-		db, err := sql.Open("sqlite3", rootCmdArgs.dbPath)
-		if err != nil {
+		if jsonResult, err := json.Marshal(alfred.Result{Items: readElfeedItems()}); err != nil {
+			log.Fatal(err)
+		} else {
+			fmt.Println(string(jsonResult))
+		}
+	},
+}
+
+var elfeedResolveCmd = &cobra.Command{
+	Use:                   "resolve title",
+	DisableFlagsInUseLine: true,
+	Short:                 "Resolve elfeed title to its link",
+	Args:                  cobra.ExactArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		items := readElfeedItems()
+		for _, item := range items {
+			if item.Title == args[0] {
+				fmt.Print(item.Arg)
+				return
+			}
+		}
+		log.Fatalf("not found")
+	},
+}
+
+func readElfeedItems() []alfred.Item {
+	db, err := sql.Open("sqlite3", rootCmdArgs.dbPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+	rows, err := db.Query(`SELECT
+  nodes.properties
+FROM nodes
+INNER JOIN files ON nodes.file = files.file
+WHERE nodes.level == 2 AND files.file LIKE '%/feeds.org%'`)
+	if err != nil {
+		log.Fatal(err)
+	}
+	var (
+		props node.Props
+		items []alfred.Item
+	)
+	for rows.Next() {
+		if err := rows.Scan(&props); err != nil {
 			log.Fatal(err)
 		}
-		defer db.Close()
-		rows, err := db.Query(elfeedPropsQuery)
-		if err != nil {
-			log.Fatal(err)
-		}
-		var (
-			props  node.Props
-			result alfred.Result
-		)
-		for rows.Next() {
-			if err := rows.Scan(&props); err != nil {
-				log.Fatal(err)
-			}
-			if _, found := props.Tags["fomo"]; !found {
-				continue
-			}
+		if _, found := props.Tags["fomo"]; found {
 			if url, title, err := props.ItemLinkData(); err == nil {
 				url, _ = strings.CutPrefix(url, "elfeed:")
-				if elfeedCmdArgs.resolveTitle != "" && title == elfeedCmdArgs.resolveTitle {
-					fmt.Print(url)
-					return
-				}
-				result.Items = append(
-					result.Items,
+				items = append(
+					items,
 					alfred.Item{
 						Title:    title,
 						Arg:      url,
@@ -57,25 +85,12 @@ var elfeedCmd = &cobra.Command{
 				)
 			}
 		}
-		if jsonResult, err := json.Marshal(result); err != nil {
-			log.Fatal(err)
-		} else {
-			fmt.Println(string(jsonResult))
-		}
-	},
-}
-
-const elfeedPropsQuery = `SELECT
-  nodes.properties
-FROM nodes
-INNER JOIN files ON nodes.file = files.file
-WHERE nodes.level == 2 AND files.file LIKE '%/feeds.org%'`
-
-var elfeedCmdArgs struct {
-	resolveTitle string
+	}
+	return items
 }
 
 func init() {
 	rootCmd.AddCommand(elfeedCmd)
-	elfeedCmd.Flags().StringVar(&elfeedCmdArgs.resolveTitle, "resolve_title", "", "Resolve elfeed title")
+	elfeedCmd.AddCommand(elfeedItemsCmd)
+	elfeedCmd.AddCommand(elfeedResolveCmd)
 }

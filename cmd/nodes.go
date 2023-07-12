@@ -32,7 +32,15 @@ var nodesCmd = &cobra.Command{
 			// TODO: collapse consecutive spaces into one prior to the replacement
 			titleRe = regexp.MustCompile("(?i)" + strings.ReplaceAll(args[0], " ", ".*"))
 		}
-		rows, err := db.Query(nodeQuery)
+		rows, err := db.Query(`SELECT
+  nodes.id,
+  nodes.level,
+  nodes.properties,
+  files.title,
+  nodes.title,
+  nodes.olp
+FROM nodes
+INNER JOIN files ON nodes.file = files.file`)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -77,16 +85,6 @@ func matchNode(node node.Node, titleRe *regexp.Regexp) bool {
 	}
 	return titleRe.MatchString(node.Title)
 }
-
-const nodeQuery = `SELECT
-  nodes.id,
-  nodes.level,
-  nodes.properties,
-  files.title,
-  nodes.title,
-  nodes.olp
-FROM nodes
-INNER JOIN files ON nodes.file = files.file`
 
 var nodesCmdArgs struct {
 	category string

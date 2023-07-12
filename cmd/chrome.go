@@ -84,7 +84,7 @@ func makeDynamicItems(alfredQuery string) []alfred.Item {
 				alfred.Item{
 					Title: fmt.Sprintf(`open "%v"`, alfredQuery),
 					Arg:   alfredQuery,
-					Icon:  makeIcon("chrome", ""),
+					Icon:  makeIcon("chrome"),
 				})
 		} else {
 			if chromeCmdArgs.category == "home" {
@@ -93,17 +93,17 @@ func makeDynamicItems(alfredQuery string) []alfred.Item {
 					alfred.Item{
 						Title: fmt.Sprintf(`search google for "%v"`, alfredQuery),
 						Arg:   "https://www.google.com/search?q=" + alfredQuery,
-						Icon:  makeIcon("chrome", ""),
+						Icon:  makeIcon("chrome"),
 					},
 					alfred.Item{
 						Title: fmt.Sprintf(`search map for "%v"`, alfredQuery),
 						Arg:   "https://www.google.com/maps/search/" + alfredQuery,
-						Icon:  makeIcon("map", ""),
+						Icon:  makeIcon("map"),
 					},
 					alfred.Item{
 						Title: fmt.Sprintf(`search youtube for "%v"`, alfredQuery),
 						Arg:   "https://www.youtube.com/results?search_query=" + alfredQuery,
-						Icon:  makeIcon("youtube", ""),
+						Icon:  makeIcon("youtube"),
 					},
 				)
 			} else if chromeCmdArgs.category == "goog" {
@@ -112,32 +112,32 @@ func makeDynamicItems(alfredQuery string) []alfred.Item {
 					alfred.Item{
 						Title: fmt.Sprintf(`search moma for "%v"`, alfredQuery),
 						Arg:   "https://moma.corp.google.com/search?q" + alfredQuery,
-						Icon:  makeIcon("moma", ""),
+						Icon:  makeIcon("moma"),
 					},
 					alfred.Item{
 						Title: fmt.Sprintf(`code search for "%v"`, alfredQuery),
 						Arg:   "https://source.corp.google.com/search?q=" + alfredQuery,
-						Icon:  makeIcon("cs", ""),
+						Icon:  makeIcon("cs"),
 					},
 					alfred.Item{
 						Title: fmt.Sprintf(`search google for "%v"`, alfredQuery),
 						Arg:   "https://www.google.com/search?q=" + alfredQuery,
-						Icon:  makeIcon("search", ""),
+						Icon:  makeIcon("search"),
 					},
 					alfred.Item{
 						Title: fmt.Sprintf(`search glossary for "%v"`, alfredQuery),
 						Arg:   "https://moma.corp.google.com/search?hq=type:glossary&q=" + alfredQuery,
-						Icon:  makeIcon("glossary", ""),
+						Icon:  makeIcon("glossary"),
 					},
 					alfred.Item{
 						Title: fmt.Sprintf(`search who for "%v"`, alfredQuery),
 						Arg:   "https://moma.corp.google.com/search?hq=type:people&q=" + alfredQuery,
-						Icon:  makeIcon("who", ""),
+						Icon:  makeIcon("who"),
 					},
 					alfred.Item{
 						Title: fmt.Sprintf(`search go links for "%v"`, alfredQuery),
 						Arg:   "https://moma.corp.google.com/go2/search?q=" + alfredQuery,
-						Icon:  makeIcon("go_links", ""),
+						Icon:  makeIcon("go_links"),
 					},
 				)
 			}
@@ -146,17 +146,15 @@ func makeDynamicItems(alfredQuery string) []alfred.Item {
 	return items
 }
 
-func makeIcon(titleBase, iconBase string) alfred.Icon {
-	baseDir := filepath.Join(chromeCmdArgs.orgDir, "alfred", "images")
-	iconPath := ""
-	if iconBase != "" {
-		iconPath = filepath.Join(baseDir, iconBase+".png")
-	} else {
-		iconPath = filepath.Join(baseDir, titleBase+".png")
-	}
+func makeIcon(bases ...string) alfred.Icon {
+	dir := filepath.Join(chromeCmdArgs.orgDir, "alfred", "images")
 	icon := alfred.Icon{}
-	if info, err := os.Stat(iconPath); err == nil && !info.IsDir() {
-		icon.Path = iconPath
+	for _, base := range bases {
+		path := filepath.Join(dir, base+".png")
+		if info, err := os.Stat(path); err == nil && !info.IsDir() {
+			icon.Path = path
+			break
+		}
 	}
 	return icon
 }

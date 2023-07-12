@@ -66,7 +66,7 @@ WHERE nodes.level == 2 AND files.file LIKE '%/chrome.org%'`)
 			}
 		}
 		if len(result.Items) == 0 {
-			result.Items = append(result.Items, makeDynamicItems(chromeCmdArgs.query)...)
+			result.Items = makeDynamicItems(chromeCmdArgs.query)
 		}
 		for i := range result.Items {
 			result.Items[i].Variables.Profile = chromeCmdArgs.category

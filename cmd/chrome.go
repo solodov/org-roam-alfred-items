@@ -56,7 +56,7 @@ WHERE nodes.level == 2 AND files.file LIKE '%/chrome.org%'`)
 							Subtitle:     url,
 							Arg:          url,
 							Autocomplete: url,
-							Icon:         makeIcon(strings.ReplaceAll(title, " ", "_"), props.Icon),
+							Icon:         makeIcon(props.Icon, strings.ReplaceAll(title, " ", "_")),
 							Variables:    alfred.Variables{BrowserOverride: props.BrowserOverride},
 						})
 					if len(result.Items) == 1 {

@@ -24,11 +24,12 @@ var elfeedItemsCmd = &cobra.Command{
 	Use:                   "items",
 	DisableFlagsInUseLine: true,
 	Short:                 "Output elfeed alfred items",
+	Args:                  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
-		if jsonResult, err := json.Marshal(alfred.Result{Items: readElfeedItems()}); err != nil {
+		if res, err := json.Marshal(alfred.Result{Items: readElfeedItems()}); err != nil {
 			log.Fatal(err)
 		} else {
-			fmt.Println(string(jsonResult))
+			fmt.Println(string(res))
 		}
 	},
 }

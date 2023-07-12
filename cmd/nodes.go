@@ -5,8 +5,6 @@ package cmd
 
 import (
 	"database/sql"
-	"encoding/json"
-	"fmt"
 	"log"
 	"regexp"
 	"sort"
@@ -58,11 +56,7 @@ var nodesCmd = &cobra.Command{
 		sort.Slice(result.Items, func(i, j int) bool {
 			return result.Items[i].Title < result.Items[j].Title
 		})
-		if res, err := json.Marshal(result); err != nil {
-			log.Fatal(err)
-		} else {
-			fmt.Println(string(res))
-		}
+		printJson(result)
 	},
 }
 

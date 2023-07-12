@@ -5,7 +5,6 @@ package cmd
 
 import (
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"log"
 	"strings"
@@ -26,11 +25,7 @@ var elfeedItemsCmd = &cobra.Command{
 	Short:                 "Output elfeed alfred items",
 	Args:                  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
-		if res, err := json.Marshal(alfred.Result{Items: readElfeedItems()}); err != nil {
-			log.Fatal(err)
-		} else {
-			fmt.Println(string(res))
-		}
+		printJson(alfred.Result{Items: readElfeedItems()})
 	},
 }
 

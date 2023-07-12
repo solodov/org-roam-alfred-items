@@ -5,7 +5,6 @@ package cmd
 
 import (
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/url"
@@ -69,11 +68,7 @@ var chromeCmd = &cobra.Command{
 		for i := range result.Items {
 			result.Items[i].Variables.Profile = chromeCmdArgs.category
 		}
-		if jsonResult, err := json.Marshal(result); err != nil {
-			log.Fatal(err)
-		} else {
-			fmt.Println(string(jsonResult))
-		}
+		printJson(result)
 	},
 }
 

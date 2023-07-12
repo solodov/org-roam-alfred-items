@@ -16,11 +16,11 @@ import (
 )
 
 var nodesCmd = &cobra.Command{
-	Use:                   "nodes [--category category] [regex]",
+	Use:                   "nodes [--category category] [--query regex]",
 	DisableFlagsInUseLine: true,
 	Short:                 "Find matching org roam nodes and output them as alfred items",
 	Long:                  "Find matching org roam nodes and output them as alfred items",
-	Args:                  cobra.MaximumNArgs(1),
+	Args:                  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		db, err := sql.Open("sqlite3", rootCmdArgs.dbPath)
 		if err != nil {
@@ -28,9 +28,9 @@ var nodesCmd = &cobra.Command{
 		}
 		defer db.Close()
 		var titleRe *regexp.Regexp
-		if len(args) == 1 {
+		if nodesCmdArgs.query != "" {
 			// TODO: collapse consecutive spaces into one prior to the replacement
-			titleRe = regexp.MustCompile("(?i)" + strings.ReplaceAll(args[0], " ", ".*"))
+			titleRe = regexp.MustCompile("(?i)" + strings.ReplaceAll(nodesCmdArgs.query, " ", ".*"))
 		}
 		rows, err := db.Query(`SELECT
   nodes.id,
@@ -87,10 +87,11 @@ func matchNode(node node.Node, titleRe *regexp.Regexp) bool {
 }
 
 var nodesCmdArgs struct {
-	category string
+	category, query string
 }
 
 func init() {
 	rootCmd.AddCommand(nodesCmd)
 	nodesCmd.Flags().StringVar(&nodesCmdArgs.category, "category", "", "Category to limit items to")
+	nodesCmd.Flags().StringVar(&nodesCmdArgs.query, "query", "", "Alfred input query")
 }

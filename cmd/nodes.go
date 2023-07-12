@@ -18,13 +18,13 @@ import (
 )
 
 var nodesCmd = &cobra.Command{
-	Use:                   "nodes [-c category] [regex]",
+	Use:                   "nodes [--category category] [regex]",
 	DisableFlagsInUseLine: true,
 	Short:                 "Find matching org roam nodes and output them as alfred items",
 	Long:                  "Find matching org roam nodes and output them as alfred items",
 	Args:                  cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		db, err := sql.Open("sqlite3", dbPath)
+		db, err := sql.Open("sqlite3", rootCmdArgs.dbPath)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -67,7 +67,7 @@ var nodesCmd = &cobra.Command{
 }
 
 func matchNode(node node.Node, titleRe *regexp.Regexp) bool {
-	if category != "" && node.Props.Category != "any" && node.Props.Category != category {
+	if nodesCmdArgs.category != "" && node.Props.Category != "any" && node.Props.Category != nodesCmdArgs.category {
 		return false
 	}
 	for _, tag := range []string{"ARCHIVE", "feeds", "chrome_link"} {
@@ -94,6 +94,11 @@ const nodeQuery = `SELECT
 FROM nodes
 INNER JOIN files ON nodes.file = files.file`
 
+var nodesCmdArgs struct {
+	category string
+}
+
 func init() {
 	rootCmd.AddCommand(nodesCmd)
+	nodesCmd.Flags().StringVar(&nodesCmdArgs.category, "category", "", "Category to limit items to")
 }

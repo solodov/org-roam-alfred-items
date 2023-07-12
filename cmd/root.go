@@ -26,7 +26,9 @@ func Execute() {
 	}
 }
 
-var dbPath, category string
+var rootCmdArgs struct {
+	dbPath string
+}
 
 func scan(rows *sql.Rows, args ...any) error {
 	if err := rows.Scan(args...); err != nil {
@@ -43,6 +45,5 @@ func scan(rows *sql.Rows, args ...any) error {
 
 func init() {
 	u, _ := user.Current()
-	rootCmd.PersistentFlags().StringVar(&dbPath, "db_path", filepath.Join(u.HomeDir, "org/.roam.db"), "Path to the org roam database")
-	rootCmd.PersistentFlags().StringVarP(&category, "category", "c", "", "Category to limit items to")
+	rootCmd.PersistentFlags().StringVar(&rootCmdArgs.dbPath, "db_path", filepath.Join(u.HomeDir, "org/.roam.db"), "Path to the org roam database")
 }

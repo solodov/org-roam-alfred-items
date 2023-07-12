@@ -39,8 +39,7 @@ var elfeedResolveCmd = &cobra.Command{
 	Short:                 "Resolve elfeed title to its link",
 	Args:                  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		items := readElfeedItems()
-		for _, item := range items {
+		for _, item := range readElfeedItems() {
 			if item.Title == args[0] {
 				fmt.Print(item.Arg)
 				return

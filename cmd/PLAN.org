@@ -16,6 +16,7 @@ this by creating a filter, see
 https://www.reddit.com/r/emacs/comments/p6w3dx/org_roam_can_i_filtercomplete_on_a_subset_based/. For
 the purpose of this integration the filter will pass all nodes unless they are in chrome.org
 file and level is greater than 0.
-* Elfeed links
+* DONE Elfeed links
+CLOSED: [2023-07-11 Tue 21:41]
 Elfeed links are similar to chrome links, they don't require parsing org files, roam
 database is good enough.

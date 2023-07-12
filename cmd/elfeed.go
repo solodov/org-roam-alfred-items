@@ -51,8 +51,7 @@ func readElfeedItems() []alfred.Item {
 		log.Fatal(err)
 	}
 	defer db.Close()
-	rows, err := db.Query(`SELECT
-  nodes.properties
+	rows, err := db.Query(`SELECT nodes.properties
 FROM nodes
 INNER JOIN files ON nodes.file = files.file
 WHERE nodes.level == 2 AND files.file LIKE '%/feeds.org%'`)

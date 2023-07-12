@@ -29,7 +29,10 @@ var chromeCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 		defer db.Close()
-		rows, err := db.Query(chromeLinkPropsQuery)
+		rows, err := db.Query(`SELECT nodes.properties
+FROM nodes
+INNER JOIN files ON nodes.file = files.file
+WHERE nodes.level == 2 AND files.file LIKE '%/chrome.org%'`)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -71,12 +74,6 @@ var chromeCmd = &cobra.Command{
 		printJson(result)
 	},
 }
-
-const chromeLinkPropsQuery = `SELECT
-  nodes.properties
-FROM nodes
-INNER JOIN files ON nodes.file = files.file
-WHERE nodes.level == 2 AND files.file LIKE '%/chrome.org%'`
 
 func makeDynamicItems(alfredQuery string) []alfred.Item {
 	items := []alfred.Item{}

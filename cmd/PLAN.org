@@ -1,4 +1,5 @@
-* Chrome items
+* DONE Chrome items
+CLOSED: [2023-07-11 Tue 21:20]
 Python implementation parses the file and extracts sections. However roam maintains all this
 data in its database.
 

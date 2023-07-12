@@ -43,6 +43,10 @@ var elfeedCmd = &cobra.Command{
 			}
 			if url, title, err := props.ItemLinkData(); err == nil {
 				url, _ = strings.CutPrefix(url, "elfeed:")
+				if elfeedCmdArgs.resolveTitle != "" && title == elfeedCmdArgs.resolveTitle {
+					fmt.Print(url)
+					return
+				}
 				result.Items = append(
 					result.Items,
 					alfred.Item{
@@ -67,6 +71,11 @@ FROM nodes
 INNER JOIN files ON nodes.file = files.file
 WHERE nodes.level == 2 AND files.file LIKE '%/feeds.org%'`
 
+var elfeedCmdArgs struct {
+	resolveTitle string
+}
+
 func init() {
 	rootCmd.AddCommand(elfeedCmd)
+	elfeedCmd.Flags().StringVar(&elfeedCmdArgs.resolveTitle, "resolve_title", "", "Resolve elfeed title")
 }

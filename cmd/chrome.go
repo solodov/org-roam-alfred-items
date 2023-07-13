@@ -56,7 +56,7 @@ WHERE nodes.level == 2 AND files.file LIKE '%/chrome.org%'`)
 							Subtitle:     url,
 							Arg:          url,
 							Autocomplete: url,
-							Icon:         makeIcon(props.Icon, strings.ReplaceAll(title, " ", "_")),
+							Icon:         pickIcon(props.Icon, strings.ReplaceAll(title, " ", "_")),
 							Variables:    alfred.Variables{BrowserOverride: props.BrowserOverride},
 						})
 					if len(result.Items) == 1 {
@@ -84,7 +84,7 @@ func makeDynamicItems(alfredQuery string) []alfred.Item {
 				alfred.Item{
 					Title: fmt.Sprintf(`open "%v"`, alfredQuery),
 					Arg:   alfredQuery,
-					Icon:  makeIcon("chrome"),
+					Icon:  pickIcon("chrome"),
 				})
 		} else {
 			if chromeCmdArgs.category == "home" {
@@ -93,17 +93,17 @@ func makeDynamicItems(alfredQuery string) []alfred.Item {
 					alfred.Item{
 						Title: fmt.Sprintf(`search google for "%v"`, alfredQuery),
 						Arg:   "https://www.google.com/search?q=" + alfredQuery,
-						Icon:  makeIcon("chrome"),
+						Icon:  pickIcon("chrome"),
 					},
 					alfred.Item{
 						Title: fmt.Sprintf(`search map for "%v"`, alfredQuery),
 						Arg:   "https://www.google.com/maps/search/" + alfredQuery,
-						Icon:  makeIcon("map"),
+						Icon:  pickIcon("map"),
 					},
 					alfred.Item{
 						Title: fmt.Sprintf(`search youtube for "%v"`, alfredQuery),
 						Arg:   "https://www.youtube.com/results?search_query=" + alfredQuery,
-						Icon:  makeIcon("youtube"),
+						Icon:  pickIcon("youtube"),
 					},
 				)
 			} else if chromeCmdArgs.category == "goog" {
@@ -112,32 +112,32 @@ func makeDynamicItems(alfredQuery string) []alfred.Item {
 					alfred.Item{
 						Title: fmt.Sprintf(`search moma for "%v"`, alfredQuery),
 						Arg:   "https://moma.corp.google.com/search?q" + alfredQuery,
-						Icon:  makeIcon("moma"),
+						Icon:  pickIcon("moma"),
 					},
 					alfred.Item{
 						Title: fmt.Sprintf(`code search for "%v"`, alfredQuery),
 						Arg:   "https://source.corp.google.com/search?q=" + alfredQuery,
-						Icon:  makeIcon("cs"),
+						Icon:  pickIcon("cs"),
 					},
 					alfred.Item{
 						Title: fmt.Sprintf(`search google for "%v"`, alfredQuery),
 						Arg:   "https://www.google.com/search?q=" + alfredQuery,
-						Icon:  makeIcon("search"),
+						Icon:  pickIcon("search"),
 					},
 					alfred.Item{
 						Title: fmt.Sprintf(`search glossary for "%v"`, alfredQuery),
 						Arg:   "https://moma.corp.google.com/search?hq=type:glossary&q=" + alfredQuery,
-						Icon:  makeIcon("glossary"),
+						Icon:  pickIcon("glossary"),
 					},
 					alfred.Item{
 						Title: fmt.Sprintf(`search who for "%v"`, alfredQuery),
 						Arg:   "https://moma.corp.google.com/search?hq=type:people&q=" + alfredQuery,
-						Icon:  makeIcon("who"),
+						Icon:  pickIcon("who"),
 					},
 					alfred.Item{
 						Title: fmt.Sprintf(`search go links for "%v"`, alfredQuery),
 						Arg:   "https://moma.corp.google.com/go2/search?q=" + alfredQuery,
-						Icon:  makeIcon("go_links"),
+						Icon:  pickIcon("go_links"),
 					},
 				)
 			}
@@ -146,7 +146,7 @@ func makeDynamicItems(alfredQuery string) []alfred.Item {
 	return items
 }
 
-func makeIcon(bases ...string) alfred.Icon {
+func pickIcon(bases ...string) alfred.Icon {
 	dir := filepath.Join(chromeCmdArgs.orgDir, "alfred", "images")
 	icon := alfred.Icon{}
 	for _, base := range bases {

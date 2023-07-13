@@ -8,6 +8,7 @@ import (
 	"log"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -57,7 +58,8 @@ INNER JOIN files ON nodes.file = files.file`)
 			}
 			for _, a := range args {
 				if v, ok := a.(*string); ok {
-					*v = strings.ReplaceAll(strings.Trim(*v, `"`), `\"`, `"`)
+					*v, _ = strconv.Unquote(*v)
+					*v = strings.ReplaceAll(*v, `\"`, `"`)
 				}
 			}
 			return nil

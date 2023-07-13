@@ -19,7 +19,7 @@ import (
 )
 
 var chromeCmd = &cobra.Command{
-	Use:   "chrome [--category cat] [--query query]",
+	Use:   "chrome --category cat [--query query]",
 	Short: "Output chrome alfred items matching the argument",
 	Long:  `Output chrome alfred items matching the argument`,
 	Args:  cobra.NoArgs,
@@ -44,7 +44,7 @@ WHERE nodes.level == 2 AND files.file LIKE '%/chrome.org%'`)
 			if err := rows.Scan(&props); err != nil {
 				log.Fatal(err)
 			}
-			if chromeCmdArgs.category != "" && props.Category != chromeCmdArgs.category {
+			if props.Category != chromeCmdArgs.category {
 				continue
 			}
 			if url, title, err := props.ItemLinkData(); err == nil {
@@ -86,61 +86,59 @@ func makeDynamicItems(alfredQuery string) []alfred.Item {
 					Arg:   alfredQuery,
 					Icon:  pickIcon("chrome"),
 				})
-		} else {
-			if chromeCmdArgs.category == "home" {
-				items = append(
-					items,
-					alfred.Item{
-						Title: fmt.Sprintf(`search google for "%v"`, alfredQuery),
-						Arg:   "https://www.google.com/search?q=" + alfredQuery,
-						Icon:  pickIcon("chrome"),
-					},
-					alfred.Item{
-						Title: fmt.Sprintf(`search map for "%v"`, alfredQuery),
-						Arg:   "https://www.google.com/maps/search/" + alfredQuery,
-						Icon:  pickIcon("map"),
-					},
-					alfred.Item{
-						Title: fmt.Sprintf(`search youtube for "%v"`, alfredQuery),
-						Arg:   "https://www.youtube.com/results?search_query=" + alfredQuery,
-						Icon:  pickIcon("youtube"),
-					},
-				)
-			} else if chromeCmdArgs.category == "goog" {
-				items = append(
-					items,
-					alfred.Item{
-						Title: fmt.Sprintf(`search moma for "%v"`, alfredQuery),
-						Arg:   "https://moma.corp.google.com/search?q" + alfredQuery,
-						Icon:  pickIcon("moma"),
-					},
-					alfred.Item{
-						Title: fmt.Sprintf(`code search for "%v"`, alfredQuery),
-						Arg:   "https://source.corp.google.com/search?q=" + alfredQuery,
-						Icon:  pickIcon("cs"),
-					},
-					alfred.Item{
-						Title: fmt.Sprintf(`search google for "%v"`, alfredQuery),
-						Arg:   "https://www.google.com/search?q=" + alfredQuery,
-						Icon:  pickIcon("search"),
-					},
-					alfred.Item{
-						Title: fmt.Sprintf(`search glossary for "%v"`, alfredQuery),
-						Arg:   "https://moma.corp.google.com/search?hq=type:glossary&q=" + alfredQuery,
-						Icon:  pickIcon("glossary"),
-					},
-					alfred.Item{
-						Title: fmt.Sprintf(`search who for "%v"`, alfredQuery),
-						Arg:   "https://moma.corp.google.com/search?hq=type:people&q=" + alfredQuery,
-						Icon:  pickIcon("who"),
-					},
-					alfred.Item{
-						Title: fmt.Sprintf(`search go links for "%v"`, alfredQuery),
-						Arg:   "https://moma.corp.google.com/go2/search?q=" + alfredQuery,
-						Icon:  pickIcon("go_links"),
-					},
-				)
-			}
+		} else if chromeCmdArgs.category == "home" {
+			items = append(
+				items,
+				alfred.Item{
+					Title: fmt.Sprintf(`search google for "%v"`, alfredQuery),
+					Arg:   "https://www.google.com/search?q=" + alfredQuery,
+					Icon:  pickIcon("chrome"),
+				},
+				alfred.Item{
+					Title: fmt.Sprintf(`search map for "%v"`, alfredQuery),
+					Arg:   "https://www.google.com/maps/search/" + alfredQuery,
+					Icon:  pickIcon("map"),
+				},
+				alfred.Item{
+					Title: fmt.Sprintf(`search youtube for "%v"`, alfredQuery),
+					Arg:   "https://www.youtube.com/results?search_query=" + alfredQuery,
+					Icon:  pickIcon("youtube"),
+				},
+			)
+		} else if chromeCmdArgs.category == "goog" {
+			items = append(
+				items,
+				alfred.Item{
+					Title: fmt.Sprintf(`search moma for "%v"`, alfredQuery),
+					Arg:   "https://moma.corp.google.com/search?q" + alfredQuery,
+					Icon:  pickIcon("moma"),
+				},
+				alfred.Item{
+					Title: fmt.Sprintf(`code search for "%v"`, alfredQuery),
+					Arg:   "https://source.corp.google.com/search?q=" + alfredQuery,
+					Icon:  pickIcon("cs"),
+				},
+				alfred.Item{
+					Title: fmt.Sprintf(`search google for "%v"`, alfredQuery),
+					Arg:   "https://www.google.com/search?q=" + alfredQuery,
+					Icon:  pickIcon("search"),
+				},
+				alfred.Item{
+					Title: fmt.Sprintf(`search glossary for "%v"`, alfredQuery),
+					Arg:   "https://moma.corp.google.com/search?hq=type:glossary&q=" + alfredQuery,
+					Icon:  pickIcon("glossary"),
+				},
+				alfred.Item{
+					Title: fmt.Sprintf(`search who for "%v"`, alfredQuery),
+					Arg:   "https://moma.corp.google.com/search?hq=type:people&q=" + alfredQuery,
+					Icon:  pickIcon("who"),
+				},
+				alfred.Item{
+					Title: fmt.Sprintf(`search go links for "%v"`, alfredQuery),
+					Arg:   "https://moma.corp.google.com/go2/search?q=" + alfredQuery,
+					Icon:  pickIcon("go_links"),
+				},
+			)
 		}
 	}
 	return items
@@ -169,4 +167,5 @@ func init() {
 	chromeCmd.Flags().StringVar(&chromeCmdArgs.orgDir, "org_dir", filepath.Join(u.HomeDir, "org"), "Org directory")
 	chromeCmd.Flags().StringVar(&chromeCmdArgs.query, "query", "", "Alfred input query")
 	chromeCmd.Flags().StringVar(&chromeCmdArgs.category, "category", "", "Category to limit items to")
+	chromeCmd.MarkFlagRequired("category")
 }

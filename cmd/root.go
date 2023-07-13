@@ -4,14 +4,12 @@ Copyright © 2023 Peter Solodov <solodov@gmail.com>
 package cmd
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
 	"os"
 	"os/user"
 	"path/filepath"
-	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -32,19 +30,6 @@ func Execute() {
 var rootCmdArgs struct {
 	dbPath string
 	pretty bool
-}
-
-func scan(rows *sql.Rows, args ...any) error {
-	if err := rows.Scan(args...); err != nil {
-		return err
-	}
-	for _, a := range args {
-		v, ok := a.(*string)
-		if ok {
-			*v = strings.ReplaceAll(strings.Trim(*v, `"`), `\"`, `"`)
-		}
-	}
-	return nil
 }
 
 func printJson(data any) {

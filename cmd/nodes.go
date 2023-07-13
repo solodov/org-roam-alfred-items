@@ -49,22 +49,35 @@ INNER JOIN files ON nodes.file = files.file`)
 			id, fileTitle, nodeTitle string
 			props                    node.Props
 			olp                      sql.NullString
+			nodes                    []node.Node
 		)
-		result := struct {
-			Items []node.Node `json:"items"`
-		}{}
+
+		scan := func(args ...any) error {
+			if err := rows.Scan(args...); err != nil {
+				return err
+			}
+			for _, a := range args {
+				if v, ok := a.(*string); ok {
+					*v = strings.ReplaceAll(strings.Trim(*v, `"`), `\"`, `"`)
+				}
+			}
+			return nil
+		}
+
 		for rows.Next() {
-			if err := scan(rows, &id, &level, &props, &fileTitle, &nodeTitle, &olp); err != nil {
+			if err := scan(&id, &level, &props, &fileTitle, &nodeTitle, &olp); err != nil {
 				log.Fatal(err)
 			}
 			if node := node.New(id, level, props, fileTitle, nodeTitle, olp); matchNode(node, titleRe) {
-				result.Items = append(result.Items, node)
+				nodes = append(nodes, node)
 			}
 		}
-		sort.Slice(result.Items, func(i, j int) bool {
-			return result.Items[i].Title < result.Items[j].Title
+		sort.Slice(nodes, func(i, j int) bool {
+			return nodes[i].Title < nodes[j].Title
 		})
-		printJson(result)
+		printJson(struct {
+			Items []node.Node `json:"items"`
+		}{Items: nodes})
 	},
 }
 

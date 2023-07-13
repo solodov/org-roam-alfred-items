@@ -51,7 +51,6 @@ INNER JOIN files ON nodes.file = files.file`)
 			olp                      sql.NullString
 			nodes                    []node.Node
 		)
-
 		scan := func(args ...any) error {
 			if err := rows.Scan(args...); err != nil {
 				return err
@@ -63,7 +62,6 @@ INNER JOIN files ON nodes.file = files.file`)
 			}
 			return nil
 		}
-
 		for rows.Next() {
 			if err := scan(&id, &level, &props, &fileTitle, &nodeTitle, &olp); err != nil {
 				log.Fatal(err)

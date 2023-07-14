@@ -37,8 +37,8 @@ WHERE nodes.level == 2 AND files.file LIKE '%/chrome.org%'`)
 			log.Fatal(err)
 		}
 		var (
-			props  roam.Props
-			result alfred.Result
+			props roam.Props
+			items []alfred.Item
 		)
 		for rows.Next() {
 			if err := rows.Scan(&props); err != nil {
@@ -49,8 +49,8 @@ WHERE nodes.level == 2 AND files.file LIKE '%/chrome.org%'`)
 			}
 			if url, title, err := props.ItemLinkData(); err == nil {
 				if strings.Contains(title, chromeCmdArgs.query) || strings.Contains(props.Aliases, chromeCmdArgs.query) {
-					result.Items = append(
-						result.Items,
+					items = append(
+						items,
 						alfred.Item{
 							Title:        title,
 							Subtitle:     url,
@@ -59,19 +59,19 @@ WHERE nodes.level == 2 AND files.file LIKE '%/chrome.org%'`)
 							Icon:         pickIcon(props.Icon, strings.ReplaceAll(title, " ", "_")),
 							Variables:    alfred.Variables{BrowserOverride: props.BrowserOverride},
 						})
-					if len(result.Items) == 1 {
-						result.Items = append(result.Items, makeDynamicItems(chromeCmdArgs.query)...)
+					if len(items) == 1 {
+						items = append(items, makeDynamicItems(chromeCmdArgs.query)...)
 					}
 				}
 			}
 		}
-		if len(result.Items) == 0 {
-			result.Items = makeDynamicItems(chromeCmdArgs.query)
+		if len(items) == 0 {
+			items = makeDynamicItems(chromeCmdArgs.query)
 		}
-		for i := range result.Items {
-			result.Items[i].Variables.Profile = chromeCmdArgs.category
+		for i := range items {
+			items[i].Variables.Profile = chromeCmdArgs.category
 		}
-		printJson(result)
+		printJson(alfred.Result{Items: items})
 	},
 }
 

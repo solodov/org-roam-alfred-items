@@ -68,7 +68,7 @@ INNER JOIN files ON nodes.file = files.file`)
 			if err := scan(&id, &level, &props, &fileTitle, &nodeTitle, &olp); err != nil {
 				log.Fatal(err)
 			}
-			if node := roam.New(id, level, props, fileTitle, nodeTitle, olp); matchNode(node, titleRe) {
+			if node := roam.NewNode(id, level, props, fileTitle, nodeTitle, olp); matchNode(node, titleRe) {
 				nodes = append(nodes, node)
 			}
 		}

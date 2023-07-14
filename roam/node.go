@@ -20,7 +20,7 @@ type Node struct {
 	Props Props
 }
 
-func New(id string, level int, props Props, fileTitle, nodeTitle string, nodeOlp sql.NullString) Node {
+func NewNode(id string, level int, props Props, fileTitle, nodeTitle string, nodeOlp sql.NullString) Node {
 	var titleBuilder strings.Builder
 	if props.Category != "" {
 		fmt.Fprint(&titleBuilder, props.Category, ": ")

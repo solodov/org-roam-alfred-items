@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"regexp"
 	"sort"
@@ -12,6 +13,7 @@ import (
 	"strings"
 
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/solodov/org-roam-alfred-items/alfred"
 	"github.com/solodov/org-roam-alfred-items/roam"
 	"github.com/spf13/cobra"
 )
@@ -50,7 +52,7 @@ INNER JOIN files ON nodes.file = files.file`)
 			id, fileTitle, nodeTitle string
 			props                    roam.Props
 			olp                      sql.NullString
-			nodes                    []roam.Node
+			items                    []alfred.Item
 		)
 		scan := func(args ...any) error {
 			if err := rows.Scan(args...); err != nil {
@@ -68,43 +70,68 @@ INNER JOIN files ON nodes.file = files.file`)
 			if err := scan(&id, &level, &props, &fileTitle, &nodeTitle, &olp); err != nil {
 				log.Fatal(err)
 			}
-			if node := roam.NewNode(id, level, props, fileTitle, nodeTitle, olp); matchNode(node, titleRe) {
-				nodes = append(nodes, node)
+			if nodesCmdArgs.category != "" && props.Category != "any" && props.Category != nodesCmdArgs.category {
+				continue
 			}
+			if strings.Contains(props.Path, "/drive/") {
+				continue
+			}
+			if props.Tags.ContainsAnyOf([]string{"ARCHIVE", "feeds", "chrome_link"}) {
+				continue
+			}
+			title := makeNodeTitle(level, props, fileTitle, nodeTitle, olp)
+			if titleRe != nil && !titleRe.MatchString(title) {
+				continue
+			}
+			items = append(items, alfred.Item{Uid: id, Title: title, Arg: id, Subtitle: props.Path})
 		}
-		sort.Slice(nodes, func(i, j int) bool {
-			return nodes[i].Title < nodes[j].Title
+		sort.Slice(items, func(i, j int) bool {
+			return items[i].Title < items[j].Title
 		})
-		printJson(struct {
-			Items []roam.Node `json:"items"`
-		}{Items: nodes})
+		printJson(alfred.Result{Items: items})
 	},
 }
 
-func matchNode(node roam.Node, titleRe *regexp.Regexp) bool {
-	if nodesCmdArgs.category != "" && node.Props.Category != "any" && node.Props.Category != nodesCmdArgs.category {
-		return false
+func makeNodeTitle(level int, props roam.Props, fileTitle, nodeTitle string, nodeOlp sql.NullString) string {
+	var titleBuilder strings.Builder
+	if props.Category != "" {
+		fmt.Fprint(&titleBuilder, props.Category, ": ")
 	}
-	for _, tag := range []string{"ARCHIVE", "feeds", "chrome_link"} {
-		if _, found := node.Props.Tags[tag]; found {
-			return false
+	fmt.Fprint(&titleBuilder, fileTitle)
+	if level > 0 {
+		fmt.Fprint(&titleBuilder, " > ")
+		if nodeOlp.Valid {
+			matches := olpRe.FindAllStringSubmatch(nodeOlp.String, -1)
+			for _, match := range matches {
+				fmt.Fprint(&titleBuilder, match[1])
+				fmt.Fprint(&titleBuilder, " > ")
+			}
+		}
+		fmt.Fprint(&titleBuilder, nodeTitle)
+	}
+	if len(props.Tags) > 0 {
+		fmt.Fprint(&titleBuilder, " ")
+		tags := []string{}
+		for tag := range props.Tags {
+			tags = append(tags, tag)
+		}
+		sort.Strings(tags)
+		for _, tag := range tags {
+			fmt.Fprint(&titleBuilder, " #", tag)
 		}
 	}
-	if strings.Contains(node.Props.Path, "/drive/") {
-		return false
-	}
-	if titleRe == nil {
-		return true
-	}
-	return titleRe.MatchString(node.Title)
+	return titleBuilder.String()
 }
 
 var nodesCmdArgs struct {
 	category, query string
 }
 
+var olpRe *regexp.Regexp
+
 func init() {
 	rootCmd.AddCommand(nodesCmd)
 	nodesCmd.Flags().StringVar(&nodesCmdArgs.category, "category", "", "Category to limit items to")
 	nodesCmd.Flags().StringVar(&nodesCmdArgs.query, "query", "", "Alfred input query")
+	olpRe = regexp.MustCompile(`"((?:\\.|[^"])*)"`)
 }

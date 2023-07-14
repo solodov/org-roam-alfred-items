@@ -4,64 +4,22 @@ Copyright © 2023 Peter Solodov <solodov@gmail.com>
 package roam
 
 import (
-	"database/sql"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"reflect"
 	"regexp"
-	"sort"
 	"strings"
 )
 
-type Node struct {
-	Id    string
-	Title string
-	Props Props
-}
+type TagSet map[string]bool
 
-func NewNode(id string, level int, props Props, fileTitle, nodeTitle string, nodeOlp sql.NullString) Node {
-	var titleBuilder strings.Builder
-	if props.Category != "" {
-		fmt.Fprint(&titleBuilder, props.Category, ": ")
-	}
-	fmt.Fprint(&titleBuilder, fileTitle)
-	if level > 0 {
-		fmt.Fprint(&titleBuilder, " > ")
-		if nodeOlp.Valid {
-			matches := olpRe.FindAllStringSubmatch(nodeOlp.String, -1)
-			for _, match := range matches {
-				fmt.Fprint(&titleBuilder, match[1])
-				fmt.Fprint(&titleBuilder, " > ")
-			}
-		}
-		fmt.Fprint(&titleBuilder, nodeTitle)
-	}
-	if len(props.Tags) > 0 {
-		fmt.Fprint(&titleBuilder, " ")
-		tags := []string{}
-		for tag := range props.Tags {
-			tags = append(tags, tag)
-		}
-		sort.Strings(tags)
-		for _, tag := range tags {
-			fmt.Fprint(&titleBuilder, " #", tag)
+func (ts *TagSet) ContainsAnyOf(tags []string) bool {
+	for _, tag := range tags {
+		if _, found := (*ts)[tag]; found {
+			return true
 		}
 	}
-	return Node{
-		Id:    id,
-		Title: titleBuilder.String(),
-		Props: props,
-	}
-}
-
-func (node Node) MarshalJSON() ([]byte, error) {
-	return json.Marshal(struct {
-		Uid      string `json:"uid"`
-		Title    string `json:"title"`
-		Arg      string `json:"arg"`
-		Subtitle string `json:"subtitle"`
-	}{node.Id, node.Title, node.Id, node.Props.Path})
+	return false
 }
 
 type Props struct {
@@ -71,7 +29,7 @@ type Props struct {
 	Aliases         string
 	Icon            string
 	BrowserOverride string
-	Tags            map[string]bool
+	Tags            TagSet
 }
 
 func (props *Props) ItemLinkData() (string, string, error) {
@@ -87,7 +45,6 @@ func (props *Props) Scan(src any) error {
 	if !ok {
 		return errors.New(fmt.Sprint("wrong source type, want string, got", reflect.TypeOf(src)))
 	}
-	fmt.Println(val)
 	matchDests := map[string]*string{
 		"FILE":             &props.Path,
 		"CATEGORY":         &props.Category,
@@ -117,14 +74,9 @@ func (props *Props) Scan(src any) error {
 	return nil
 }
 
-var (
-	simplePropertyRe,
-	tagsRe,
-	olpRe *regexp.Regexp
-)
+var simplePropertyRe, tagsRe *regexp.Regexp
 
 func init() {
 	simplePropertyRe = regexp.MustCompile(`"([^"]+)" \. "([^"]+)"`)
 	tagsRe = regexp.MustCompile(`"ALLTAGS" \. .{0,2}":([^"]+):"`)
-	olpRe = regexp.MustCompile(`"((?:\\.|[^"])*)"`)
 }

@@ -1,6 +1,7 @@
 package alfred
 
 type Item struct {
+	Uid          string    `json:"uid,omitempty"`
 	Title        string    `json:"title"`
 	Subtitle     string    `json:"subtitle,omitempty"`
 	Autocomplete string    `json:"autocomplete,omitempty"`

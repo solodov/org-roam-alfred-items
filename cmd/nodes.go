@@ -22,7 +22,6 @@ var nodesCmd = &cobra.Command{
 	Use:                   "nodes [--category category] [--query regex]",
 	DisableFlagsInUseLine: true,
 	Short:                 "Find matching org roam nodes and output them as alfred items",
-	Long:                  "Find matching org roam nodes and output them as alfred items",
 	Args:                  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		db, err := sql.Open("sqlite3", rootCmdArgs.dbPath)

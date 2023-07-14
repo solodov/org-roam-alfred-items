@@ -15,9 +15,7 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "org-roam-alfred-items",
 	Short: "Output various nodes from the roam database as alfred items",
-	Long:  "Output various nodes from the roam database as alfred items",
 }
 
 func Execute() {

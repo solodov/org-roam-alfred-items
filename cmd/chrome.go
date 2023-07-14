@@ -21,7 +21,6 @@ import (
 var chromeCmd = &cobra.Command{
 	Use:   "chrome --category cat [--query query]",
 	Short: "Output chrome alfred items matching the argument",
-	Long:  `Output chrome alfred items matching the argument`,
 	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		db, err := sql.Open("sqlite3", rootCmdArgs.dbPath)

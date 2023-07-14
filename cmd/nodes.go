@@ -12,7 +12,7 @@ import (
 	"strings"
 
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/solodov/org-roam-alfred-items/node"
+	"github.com/solodov/org-roam-alfred-items/roam"
 	"github.com/spf13/cobra"
 )
 
@@ -48,9 +48,9 @@ INNER JOIN files ON nodes.file = files.file`)
 		var (
 			level                    int
 			id, fileTitle, nodeTitle string
-			props                    node.Props
+			props                    roam.Props
 			olp                      sql.NullString
-			nodes                    []node.Node
+			nodes                    []roam.Node
 		)
 		scan := func(args ...any) error {
 			if err := rows.Scan(args...); err != nil {
@@ -68,7 +68,7 @@ INNER JOIN files ON nodes.file = files.file`)
 			if err := scan(&id, &level, &props, &fileTitle, &nodeTitle, &olp); err != nil {
 				log.Fatal(err)
 			}
-			if node := node.New(id, level, props, fileTitle, nodeTitle, olp); matchNode(node, titleRe) {
+			if node := roam.New(id, level, props, fileTitle, nodeTitle, olp); matchNode(node, titleRe) {
 				nodes = append(nodes, node)
 			}
 		}
@@ -76,12 +76,12 @@ INNER JOIN files ON nodes.file = files.file`)
 			return nodes[i].Title < nodes[j].Title
 		})
 		printJson(struct {
-			Items []node.Node `json:"items"`
+			Items []roam.Node `json:"items"`
 		}{Items: nodes})
 	},
 }
 
-func matchNode(node node.Node, titleRe *regexp.Regexp) bool {
+func matchNode(node roam.Node, titleRe *regexp.Regexp) bool {
 	if nodesCmdArgs.category != "" && node.Props.Category != "any" && node.Props.Category != nodesCmdArgs.category {
 		return false
 	}

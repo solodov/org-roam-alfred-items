@@ -1,7 +1,7 @@
 /*
 Copyright © 2023 Peter Solodov <solodov@gmail.com>
 */
-package node
+package roam
 
 import (
 	"database/sql"
@@ -87,6 +87,7 @@ func (props *Props) Scan(src any) error {
 	if !ok {
 		return errors.New(fmt.Sprint("wrong source type, want string, got", reflect.TypeOf(src)))
 	}
+	fmt.Println(val)
 	matchDests := map[string]*string{
 		"FILE":             &props.Path,
 		"CATEGORY":         &props.Category,

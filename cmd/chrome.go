@@ -14,7 +14,7 @@ import (
 	"strings"
 
 	"github.com/solodov/org-roam-alfred-items/alfred"
-	"github.com/solodov/org-roam-alfred-items/node"
+	"github.com/solodov/org-roam-alfred-items/roam"
 	"github.com/spf13/cobra"
 )
 
@@ -37,7 +37,7 @@ WHERE nodes.level == 2 AND files.file LIKE '%/chrome.org%'`)
 			log.Fatal(err)
 		}
 		var (
-			props  node.Props
+			props  roam.Props
 			result alfred.Result
 		)
 		for rows.Next() {

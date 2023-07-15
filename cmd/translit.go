@@ -116,6 +116,7 @@ var translitCmd = &cobra.Command{
 		printJson(alfred.Result{Items: []alfred.Item{alfred.Item{
 			Title: translation,
 			Text:  alfred.Text{Copy: translation, LargeType: translation},
+			Arg:   translation,
 		}}})
 	},
 }

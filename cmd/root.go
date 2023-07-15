@@ -15,7 +15,20 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Short: "Output various nodes from the roam database as alfred items",
+	Short: "A collection of various Alfred tools",
+}
+
+var rootCmdArgs struct {
+	pretty bool
+}
+
+var roamCmd = &cobra.Command{
+	Use:   "roam",
+	Short: "Output various nodes from the roam database as Alfred items",
+}
+
+var roamCmdArgs struct {
+	dbPath string
 }
 
 func Execute() {
@@ -23,11 +36,6 @@ func Execute() {
 	if err != nil {
 		os.Exit(1)
 	}
-}
-
-var rootCmdArgs struct {
-	dbPath string
-	pretty bool
 }
 
 func printJson(data any) {
@@ -49,6 +57,7 @@ func printJson(data any) {
 
 func init() {
 	u, _ := user.Current()
-	rootCmd.PersistentFlags().StringVar(&rootCmdArgs.dbPath, "db_path", filepath.Join(u.HomeDir, "org/.roam.db"), "Path to the org roam database")
 	rootCmd.PersistentFlags().BoolVarP(&rootCmdArgs.pretty, "pretty", "p", false, "Pretty-print output")
+	rootCmd.AddCommand(roamCmd)
+	roamCmd.PersistentFlags().StringVar(&roamCmdArgs.dbPath, "db_path", filepath.Join(u.HomeDir, "org/.roam.db"), "Path to the org roam database")
 }

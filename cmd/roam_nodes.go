@@ -24,7 +24,7 @@ var nodesCmd = &cobra.Command{
 	Short:                 "Find matching org roam nodes and output them as alfred items",
 	Args:                  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
-		db, err := sql.Open("sqlite3", rootCmdArgs.dbPath)
+		db, err := sql.Open("sqlite3", roamCmdArgs.dbPath)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -125,7 +125,7 @@ var nodesCmdArgs struct {
 var olpRe *regexp.Regexp
 
 func init() {
-	rootCmd.AddCommand(nodesCmd)
+	roamCmd.AddCommand(nodesCmd)
 	nodesCmd.Flags().StringVar(&nodesCmdArgs.category, "category", "", "Category to limit items to")
 	nodesCmd.Flags().StringVar(&nodesCmdArgs.query, "query", "", "Alfred input query")
 	olpRe = regexp.MustCompile(`"((?:\\.|[^"])*)"`)

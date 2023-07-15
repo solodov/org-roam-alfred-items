@@ -23,7 +23,7 @@ var chromeCmd = &cobra.Command{
 	Short: "Output chrome alfred items matching the argument",
 	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
-		db, err := sql.Open("sqlite3", rootCmdArgs.dbPath)
+		db, err := sql.Open("sqlite3", roamCmdArgs.dbPath)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -161,7 +161,7 @@ var chromeCmdArgs struct {
 }
 
 func init() {
-	rootCmd.AddCommand(chromeCmd)
+	roamCmd.AddCommand(chromeCmd)
 	u, _ := user.Current()
 	chromeCmd.Flags().StringVar(&chromeCmdArgs.orgDir, "org_dir", filepath.Join(u.HomeDir, "org"), "Org directory")
 	chromeCmd.Flags().StringVar(&chromeCmdArgs.query, "query", "", "Alfred input query")

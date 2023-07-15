@@ -46,7 +46,7 @@ var elfeedResolveCmd = &cobra.Command{
 }
 
 func readElfeedItems() []alfred.Item {
-	db, err := sql.Open("sqlite3", rootCmdArgs.dbPath)
+	db, err := sql.Open("sqlite3", roamCmdArgs.dbPath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -87,7 +87,7 @@ WHERE nodes.level == 2 AND files.file LIKE '%/feeds.org%'`)
 }
 
 func init() {
-	rootCmd.AddCommand(elfeedCmd)
+	roamCmd.AddCommand(elfeedCmd)
 	elfeedCmd.AddCommand(elfeedItemsCmd)
 	elfeedCmd.AddCommand(elfeedResolveCmd)
 }

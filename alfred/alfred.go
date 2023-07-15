@@ -5,6 +5,7 @@ type Item struct {
 	Title        string    `json:"title"`
 	Subtitle     string    `json:"subtitle,omitempty"`
 	Autocomplete string    `json:"autocomplete,omitempty"`
+	Text         Text      `json:"text,omitempty"`
 	Arg          string    `json:"arg"`
 	Icon         Icon      `json:"icon,omitempty"`
 	Variables    Variables `json:"variables,omitempty"`
@@ -21,4 +22,9 @@ type Variables struct {
 
 type Result struct {
 	Items []Item `json:"items"`
+}
+
+type Text struct {
+	Copy      string `json:"copy"`
+	LargeType string `json:"largetype"`
 }

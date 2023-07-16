@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/solodov/org-roam-alfred-items/alfred"
 	"github.com/solodov/org-roam-alfred-items/roam"
 	"github.com/spf13/cobra"

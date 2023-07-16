@@ -53,9 +53,9 @@ INNER JOIN files ON nodes.file = files.file`)
 			olp                      sql.NullString
 			items                    []alfred.Item
 		)
-		scan := func(args ...any) error {
+		scan := func(args ...any) {
 			if err := rows.Scan(args...); err != nil {
-				return err
+				log.Fatal(err)
 			}
 			for _, a := range args {
 				if v, ok := a.(*string); ok {
@@ -63,12 +63,9 @@ INNER JOIN files ON nodes.file = files.file`)
 					*v = strings.ReplaceAll(*v, `\"`, `"`)
 				}
 			}
-			return nil
 		}
 		for rows.Next() {
-			if err := scan(&id, &level, &props, &fileTitle, &nodeTitle, &olp); err != nil {
-				log.Fatal(err)
-			}
+			scan(&id, &level, &props, &fileTitle, &nodeTitle, &olp)
 			if nodesCmdArgs.category != "" && props.Category != "any" && props.Category != nodesCmdArgs.category {
 				continue
 			}
@@ -110,7 +107,7 @@ func makeNodeTitle(level int, props roam.Props, fileTitle, nodeTitle string, nod
 	if len(props.Tags) > 0 {
 		tags := make([]string, len(props.Tags))
 		for tag := range props.Tags {
-			tags = append(tags, " #" + tag)
+			tags = append(tags, " #"+tag)
 		}
 		sort.Strings(tags)
 		fmt.Fprint(&titleBuilder, strings.Join(tags, ""))

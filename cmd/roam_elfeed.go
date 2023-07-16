@@ -45,7 +45,7 @@ var elfeedResolveCmd = &cobra.Command{
 	},
 }
 
-func readElfeedItems() []alfred.Item {
+func readElfeedItems() (items []alfred.Item) {
 	db, err := sql.Open("sqlite3", roamCmdArgs.dbPath)
 	if err != nil {
 		log.Fatal(err)
@@ -58,10 +58,7 @@ WHERE nodes.level == 2 AND files.file LIKE '%/feeds.org%'`)
 	if err != nil {
 		log.Fatal(err)
 	}
-	var (
-		props roam.Props
-		items []alfred.Item
-	)
+	var props roam.Props
 	for rows.Next() {
 		if err := rows.Scan(&props); err != nil {
 			log.Fatal(err)

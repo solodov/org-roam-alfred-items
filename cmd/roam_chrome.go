@@ -74,8 +74,7 @@ WHERE nodes.level == 2 AND files.file LIKE '%/chrome.org%'`)
 	},
 }
 
-func makeDynamicItems(alfredQuery string) []alfred.Item {
-	items := []alfred.Item{}
+func makeDynamicItems(alfredQuery string) (items []alfred.Item) {
 	if alfredQuery != "" {
 		if u, err := url.Parse(alfredQuery); err == nil && (strings.HasPrefix(u.Scheme, "http") || u.Scheme == "chrome") {
 			items = append(
@@ -143,9 +142,8 @@ func makeDynamicItems(alfredQuery string) []alfred.Item {
 	return items
 }
 
-func pickIcon(bases ...string) alfred.Icon {
+func pickIcon(bases ...string) (icon alfred.Icon) {
 	dir := filepath.Join(chromeCmdArgs.orgDir, "alfred", "images")
-	icon := alfred.Icon{}
 	for _, base := range bases {
 		path := filepath.Join(dir, base+".png")
 		if info, err := os.Stat(path); err == nil && !info.IsDir() {

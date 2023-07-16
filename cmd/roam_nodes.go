@@ -34,15 +34,10 @@ var nodesCmd = &cobra.Command{
 			// TODO: collapse consecutive spaces into one prior to the replacement
 			titleRe = regexp.MustCompile("(?i)" + strings.ReplaceAll(nodesCmdArgs.query, " ", ".*"))
 		}
-		rows, err := db.Query(`SELECT
-  nodes.id,
-  nodes.level,
-  nodes.properties,
-  files.title,
-  nodes.title,
-  nodes.olp
-FROM nodes
-INNER JOIN files ON nodes.file = files.file`)
+		rows, err := db.Query(`
+			SELECT nodes.id, nodes.level, nodes.properties, files.title, nodes.title, nodes.olp
+			FROM nodes
+			INNER JOIN files ON nodes.file = files.file`)
 		if err != nil {
 			log.Fatal(err)
 		}

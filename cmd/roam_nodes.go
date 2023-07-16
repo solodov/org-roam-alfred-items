@@ -97,9 +97,8 @@ func makeNodeTitle(level int, props roam.Props, fileTitle, nodeTitle string, nod
 	if level > 0 {
 		fmt.Fprint(&titleBuilder, " > ")
 		if nodeOlp.Valid {
-			matches := olpRe.FindAllStringSubmatch(nodeOlp.String, -1)
-			for _, match := range matches {
-				fmt.Fprint(&titleBuilder, match[1], " > ")
+			for _, groups := range olpRe.FindAllStringSubmatch(nodeOlp.String, -1) {
+				fmt.Fprint(&titleBuilder, groups[1], " > ")
 			}
 		}
 		fmt.Fprint(&titleBuilder, nodeTitle)

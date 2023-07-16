@@ -66,7 +66,9 @@ INNER JOIN files ON nodes.file = files.file`)
 		}
 		for rows.Next() {
 			scan(&id, &level, &props, &fileTitle, &nodeTitle, &olp)
-			if nodesCmdArgs.category != "" && props.Category != "any" && props.Category != nodesCmdArgs.category {
+			if nodesCmdArgs.category == "home" && props.Category == "goog" {
+				continue
+			} else if nodesCmdArgs.category == "goog" && props.Category == "home" {
 				continue
 			}
 			if strings.Contains(props.Path, "/drive/") {

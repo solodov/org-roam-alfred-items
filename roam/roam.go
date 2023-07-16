@@ -7,18 +7,28 @@ import (
 	"fmt"
 	"reflect"
 	"regexp"
+	"sort"
 	"strings"
 )
 
-type TagSet map[string]bool
+type Tags map[string]bool
 
-func (ts *TagSet) ContainsAnyOf(tags []string) bool {
+func (ts Tags) ContainsAnyOf(tags []string) bool {
 	for _, tag := range tags {
-		if _, found := (*ts)[tag]; found {
+		if ts[tag] {
 			return true
 		}
 	}
 	return false
+}
+
+func (ts Tags) String() string {
+	tags := make([]string, len(ts))
+	for tag := range ts {
+		tags = append(tags, " #"+tag)
+	}
+	sort.Strings(tags)
+	return strings.Join(tags, "")
 }
 
 type Props struct {
@@ -28,7 +38,7 @@ type Props struct {
 	Aliases         string
 	Icon            string
 	BrowserOverride string
-	Tags            TagSet
+	Tags            Tags
 }
 
 func (props *Props) ItemLinkData() (string, string, error) {
@@ -64,7 +74,7 @@ func (props *Props) Scan(src any) error {
 	}
 	// TODO: go 1.21 has new clear function that achieves the same:
 	// clear(p.Tags)
-	props.Tags = make(map[string]bool)
+	props.Tags = Tags{}
 	if matches := tagsRe.FindStringSubmatch(val); len(matches) > 0 {
 		for _, tag := range strings.Split(matches[1], ":") {
 			props.Tags[tag] = true

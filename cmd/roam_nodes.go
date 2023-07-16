@@ -104,14 +104,7 @@ func makeNodeTitle(level int, props roam.Props, fileTitle, nodeTitle string, nod
 		}
 		fmt.Fprint(&titleBuilder, nodeTitle)
 	}
-	if len(props.Tags) > 0 {
-		tags := make([]string, len(props.Tags))
-		for tag := range props.Tags {
-			tags = append(tags, " #"+tag)
-		}
-		sort.Strings(tags)
-		fmt.Fprint(&titleBuilder, strings.Join(tags, ""))
-	}
+	fmt.Fprint(&titleBuilder, props.Tags)
 	return titleBuilder.String()
 }
 

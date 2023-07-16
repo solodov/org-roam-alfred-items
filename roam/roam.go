@@ -50,6 +50,9 @@ func (props *Props) ItemLinkData() (string, string, error) {
 }
 
 func (props *Props) Scan(src any) error {
+	// Zero-out the receiver, Tags requires a special treatment because its zero value is nil, see
+	// https://go.dev/ref/spec#The_zero_value
+	*props = Props{Tags: Tags{}}
 	val, ok := src.(string)
 	if !ok {
 		return fmt.Errorf("wrong source type, want string, got %v", reflect.TypeOf(src))
@@ -62,9 +65,6 @@ func (props *Props) Scan(src any) error {
 		"ICON":             &props.Icon,
 		"BROWSER_OVERRIDE": &props.BrowserOverride,
 	}
-	for _, dest := range matchDests {
-		*dest = ""
-	}
 	if matches := simplePropertyRe.FindAllStringSubmatch(val, -1); len(matches) > 0 {
 		for _, groups := range matches {
 			if dest, found := matchDests[groups[1]]; found {
@@ -72,9 +72,6 @@ func (props *Props) Scan(src any) error {
 			}
 		}
 	}
-	// TODO: go 1.21 has new clear function that achieves the same:
-	// clear(p.Tags)
-	props.Tags = Tags{}
 	if matches := tagsRe.FindStringSubmatch(val); len(matches) > 0 {
 		for _, tag := range strings.Split(matches[1], ":") {
 			props.Tags[tag] = true

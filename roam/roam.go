@@ -4,7 +4,6 @@ Copyright © 2023 Peter Solodov <solodov@gmail.com>
 package roam
 
 import (
-	"errors"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -37,13 +36,13 @@ func (props *Props) ItemLinkData() (string, string, error) {
 	if groups := re.FindStringSubmatch(props.Item); len(groups) > 0 {
 		return groups[1], groups[2], nil
 	}
-	return "", "", errors.New("not a proper link")
+	return "", "", fmt.Errorf("not a proper link")
 }
 
 func (props *Props) Scan(src any) error {
 	val, ok := src.(string)
 	if !ok {
-		return errors.New(fmt.Sprint("wrong source type, want string, got", reflect.TypeOf(src)))
+		return fmt.Errorf("wrong source type, want string, got %v", reflect.TypeOf(src))
 	}
 	matchDests := map[string]*string{
 		"FILE":             &props.Path,

@@ -99,20 +99,17 @@ var translitCmd = &cobra.Command{
 		table := translitConversionTable()
 		for _, arg := range args {
 			pos := 0
+		found:
 			for pos < len(arg) {
-				found := false
 				for _, pair := range table {
 					if strings.HasPrefix(arg[pos:], pair[0]) {
 						fmt.Fprint(&b, pair[1])
 						pos += len(pair[0])
-						found = true
-						break
+						continue found
 					}
 				}
-				if !found {
-					fmt.Fprint(&b, arg[pos:pos+1])
-					pos += 1
-				}
+				fmt.Fprint(&b, arg[pos:pos+1])
+				pos += 1
 			}
 		}
 		translation := b.String()

@@ -41,12 +41,14 @@ type Props struct {
 	Tags            Tags
 }
 
-func (props *Props) ItemLinkData() (string, string, error) {
-	re := regexp.MustCompile(`\[\[([^\]]+)\]\[([^\]]+)\]\]`)
-	if groups := re.FindStringSubmatch(props.Item); len(groups) > 0 {
-		return groups[1], groups[2], nil
+func (props *Props) ItemLinkData() (data struct{ Url, Title string }, err error) {
+	if groups := linkRe.FindStringSubmatch(props.Item); len(groups) > 0 {
+		data.Url = groups[1]
+		data.Title = groups[2]
+	} else {
+		err = fmt.Errorf("not a proper link")
 	}
-	return "", "", fmt.Errorf("not a proper link")
+	return data, err
 }
 
 func (props *Props) Scan(src any) error {
@@ -80,9 +82,10 @@ func (props *Props) Scan(src any) error {
 	return nil
 }
 
-var simplePropertyRe, tagsRe *regexp.Regexp
+var simplePropertyRe, tagsRe, linkRe *regexp.Regexp
 
 func init() {
 	simplePropertyRe = regexp.MustCompile(`"([^"]+)" \. "([^"]+)"`)
 	tagsRe = regexp.MustCompile(`"ALLTAGS" \. .{0,2}":([^"]+):"`)
+	linkRe = regexp.MustCompile(`\[\[([^\]]+)\]\[([^\]]+)\]\]`)
 }

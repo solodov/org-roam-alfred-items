@@ -47,17 +47,17 @@ WHERE nodes.level == 2 AND files.file LIKE '%/chrome.org%'`)
 			if props.Category != chromeCmdArgs.category {
 				continue
 			}
-			if url, title, err := props.ItemLinkData(); err != nil {
+			if data, err := props.ItemLinkData(); err != nil {
 				continue
-			} else if strings.Contains(title, chromeCmdArgs.query) || strings.Contains(props.Aliases, chromeCmdArgs.query) {
+			} else if strings.Contains(data.Title, chromeCmdArgs.query) || strings.Contains(props.Aliases, chromeCmdArgs.query) {
 				items = append(
 					items,
 					alfred.Item{
-						Title:        title,
-						Subtitle:     url,
-						Arg:          url,
-						Autocomplete: url,
-						Icon:         pickIcon(props.Icon, strings.ReplaceAll(title, " ", "_")),
+						Title:        data.Title,
+						Subtitle:     data.Url,
+						Arg:          data.Url,
+						Autocomplete: data.Url,
+						Icon:         pickIcon(props.Icon, strings.ReplaceAll(data.Title, " ", "_")),
 						Variables:    alfred.Variables{BrowserOverride: props.BrowserOverride},
 					})
 				if len(items) == 1 {

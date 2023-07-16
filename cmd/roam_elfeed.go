@@ -64,13 +64,13 @@ WHERE nodes.level == 2 AND files.file LIKE '%/feeds.org%'`)
 			log.Fatal(err)
 		}
 		if _, found := props.Tags["fomo"]; found {
-			if url, title, err := props.ItemLinkData(); err == nil {
-				url, _ = strings.CutPrefix(url, "elfeed:")
+			if data, err := props.ItemLinkData(); err == nil {
+				url, _ := strings.CutPrefix(data.Url, "elfeed:")
 				url = strings.Trim(url, " ")
 				items = append(
 					items,
 					alfred.Item{
-						Title: title,
+						Title: data.Title,
 						// space at the end is to make searching in elfeed nicer so after typing / new search
 						// term can be added without worrying about typing a space.
 						Arg:      url + " ",

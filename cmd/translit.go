@@ -11,8 +11,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func translitConversionTable() [][]string {
-	return [][]string{
+type fromToPair struct {
+	from, to string
+}
+
+func translitConversionTable() []fromToPair {
+	return []fromToPair{
 		{"tvz", "ъ"},
 		{"shh", "щ"},
 		{"mjz", "ь"},
@@ -102,9 +106,9 @@ var translitCmd = &cobra.Command{
 		found:
 			for pos < len(arg) {
 				for _, pair := range table {
-					if strings.HasPrefix(arg[pos:], pair[0]) {
-						fmt.Fprint(&b, pair[1])
-						pos += len(pair[0])
+					if strings.HasPrefix(arg[pos:], pair.from) {
+						fmt.Fprint(&b, pair.to)
+						pos += len(pair.from)
 						continue found
 					}
 				}

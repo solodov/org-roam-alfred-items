@@ -91,7 +91,6 @@ func translitConversionTable() []fromToPair {
 		{"A", "А"},
 		{"'", "ь"},
 		{"#", "ъ"},
-		{" ", " "},
 	}
 }
 

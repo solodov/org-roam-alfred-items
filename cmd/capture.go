@@ -17,24 +17,41 @@ var captureCmd = &cobra.Command{
 	Use:   "capture",
 	Short: "Perform org capture",
 	Run: func(cmd *cobra.Command, args []string) {
-		data, _ := browserState()
-		fmt.Fprintln(os.Stderr, data)
+		variables := initVariables()
+		bs := browserState{}
+		if variables.BrowserState != "" {
+			json.Unmarshal([]byte(variables.BrowserState), &bs)
+		}
+		fmt.Fprintln(os.Stderr, bs)
 	},
 }
 
+type browserState struct {
+	Url, Title string
+}
+
 func initVariables() (variables alfred.Variables) {
-	if _, exists := os.LookupEnv("browser_state"); exists {
-	}
-	if val, exists := os.LookupEnv("meeting"); exists {
-		variables.Meeting = val
+	for _, varData := range []struct {
+		name   string
+		dest   *string
+		initFn func() string
+	}{
+		{"browser_state", &variables.BrowserState, fetchBrowserState},
+		{"meeting", &variables.Meeting, fetchMeeting},
+	} {
+		if val, exists := os.LookupEnv(varData.name); exists {
+			*varData.dest = val
+		} else {
+			*varData.dest = varData.initFn()
+		}
 	}
 	return variables
 }
 
-func browserState() (data alfred.BrowserState, err error) {
+func fetchBrowserState() (state string) {
 	cmd := exec.Command("osascript", "-l", "JavaScript")
-	if stdin, e := cmd.StdinPipe(); e != nil {
-		err = fmt.Errorf("starting osascript failed: %v\n", e)
+	if stdin, err := cmd.StdinPipe(); err != nil {
+		fmt.Fprintf(os.Stderr, "starting osascript failed: %v\n", err)
 	} else {
 		stdin.Write([]byte(`
 			const frontmostAppName = Application("System Events").applicationProcesses.where({frontmost: true}).name()[0];
@@ -52,13 +69,18 @@ func browserState() (data alfred.BrowserState, err error) {
 			JSON.stringify({url: tab.url(), title: tab.name()});
 	  `))
 		stdin.Close()
-		if output, e := cmd.CombinedOutput(); e != nil {
-			err = fmt.Errorf("osascript failed: %v\n", e)
-		} else if e := json.Unmarshal(output, &data); e != nil {
-			err = fmt.Errorf("decoding failed: %v\n", e)
+		if output, err := cmd.CombinedOutput(); err != nil {
+			fmt.Fprintf(os.Stderr, "osascript failed: %v", err)
+		} else {
+			state = string(output)
 		}
 	}
-	return data, err
+	return state
+}
+
+func fetchMeeting() string {
+	// TODO: implement this
+	return ""
 }
 
 func init() {

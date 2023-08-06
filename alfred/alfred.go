@@ -16,14 +16,10 @@ type Icon struct {
 }
 
 type Variables struct {
-	BrowserOverride string       `json:"browser_override,omitempty"`
-	Profile         string       `json:"profile,omitempty"`
-	BrowserState    BrowserState `json:"browser_state"`
-	Meeting         string       `json:"meeting"`
-}
-
-type BrowserState struct {
-	Url, Title string
+	BrowserOverride string `json:"browser_override,omitempty"`
+	Profile         string `json:"profile,omitempty"`
+	BrowserState    string `json:"browser_state,omitempty"`
+	Meeting         string `json:"meeting,omitempty"`
 }
 
 type Result struct {

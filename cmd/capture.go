@@ -22,7 +22,8 @@ var captureCmd = &cobra.Command{
 		if variables.BrowserState != "" {
 			json.Unmarshal([]byte(variables.BrowserState), &bs)
 		}
-		fmt.Fprintln(os.Stderr, bs)
+		result := alfred.Result{Variables: variables}
+		printJson(result)
 	},
 }
 

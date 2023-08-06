@@ -23,7 +23,8 @@ type Variables struct {
 }
 
 type Result struct {
-	Items []Item `json:"items"`
+	Items     []Item    `json:"items"`
+	Variables Variables `json:"variables,omitempty"`
 }
 
 type Text struct {

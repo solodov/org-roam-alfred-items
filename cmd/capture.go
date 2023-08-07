@@ -18,12 +18,12 @@ var captureCmd = &cobra.Command{
 	Use:   "capture",
 	Short: "Perform org capture",
 	Run: func(cmd *cobra.Command, args []string) {
-		variables := initVariables()
+		result := alfred.Result{}
+		initVariables(&result.Variables)
 		bs := browserState{}
-		if variables.BrowserState != "" {
-			json.Unmarshal([]byte(variables.BrowserState), &bs)
+		if result.Variables.BrowserState != "" {
+			json.Unmarshal([]byte(result.Variables.BrowserState), &bs)
 		}
-		result := alfred.Result{Variables: variables}
 		printJson(result)
 	},
 }
@@ -32,7 +32,7 @@ type browserState struct {
 	Url, Title string
 }
 
-func initVariables() (variables alfred.Variables) {
+func initVariables(variables *alfred.Variables) {
 	for _, varData := range []struct {
 		name   string
 		dest   *string
@@ -48,7 +48,6 @@ func initVariables() (variables alfred.Variables) {
 			*varData.dest = varData.initFn()
 		}
 	}
-	return variables
 }
 
 func fetchBrowserState() (state string) {

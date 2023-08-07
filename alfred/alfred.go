@@ -9,6 +9,7 @@ type Item struct {
 	Arg          string    `json:"arg"`
 	Icon         Icon      `json:"icon,omitempty"`
 	Variables    Variables `json:"variables,omitempty"`
+	Valid        bool      `json:"valid"`
 }
 
 type Icon struct {
@@ -21,6 +22,9 @@ type Variables struct {
 	BrowserState    string `json:"browser_state"`
 	Meeting         string `json:"meeting"`
 	ClockedInTask   string `json:"clocked_in_task"`
+	Action          string `json:"action"`
+	Template        string `json:"template"`
+	Arg             string `json:"arg"`
 }
 
 type Result struct {

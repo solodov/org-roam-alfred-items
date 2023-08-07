@@ -17,6 +17,7 @@ import (
 var captureCmd = &cobra.Command{
 	Use:   "capture",
 	Short: "Perform org capture",
+	Args:  cobra.MaximumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		result := alfred.Result{}
 		initVariables(&result.Variables)
@@ -95,6 +96,12 @@ func fetchClockedInTask() (t string) {
 	return t
 }
 
+var captureCmdArgs struct {
+	category string
+}
+
 func init() {
 	rootCmd.AddCommand(captureCmd)
+	captureCmd.Flags().StringVarP(&captureCmdArgs.category, "category", "c", "", "Category of capture items")
+	captureCmd.MarkFlagRequired("category")
 }

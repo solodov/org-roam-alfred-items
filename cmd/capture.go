@@ -16,7 +16,11 @@ import (
 )
 
 var captureCmd = &cobra.Command{
-	Use:   "capture",
+	Use: "capture",
+}
+
+var captureItemsCmd = &cobra.Command{
+	Use:   "items",
 	Short: "Perform org capture",
 	Args:  cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -112,6 +116,11 @@ func initVariables(variables *alfred.Variables) {
 	}
 }
 
+// TODO: implement this
+var captureActCmd = &cobra.Command{
+	Use: "act",
+}
+
 func fetchBrowserState() (state string) {
 	cmd := exec.Command("osascript", "-l", "JavaScript")
 	if stdin, err := cmd.StdinPipe(); err != nil {
@@ -163,8 +172,10 @@ var captureCmdArgs struct {
 
 func init() {
 	rootCmd.AddCommand(captureCmd)
-	captureCmd.Flags().StringVarP(&captureCmdArgs.category, "category", "c", "", "Category of capture items")
-	captureCmd.MarkFlagRequired("category")
-	captureCmd.Flags().StringVarP(&captureCmdArgs.query, "query", "q", "", "Alfred query")
-	captureCmd.MarkFlagRequired("query")
+	captureCmd.AddCommand(captureItemsCmd)
+	captureItemsCmd.Flags().StringVarP(&captureCmdArgs.category, "category", "c", "", "Category of capture items")
+	captureItemsCmd.MarkFlagRequired("category")
+	captureItemsCmd.Flags().StringVarP(&captureCmdArgs.query, "query", "q", "", "Alfred query")
+	captureItemsCmd.MarkFlagRequired("query")
+	captureCmd.AddCommand(captureActCmd)
 }

@@ -18,8 +18,9 @@ type Icon struct {
 type Variables struct {
 	BrowserOverride string `json:"browser_override,omitempty"`
 	Profile         string `json:"profile,omitempty"`
-	BrowserState    string `json:"browser_state,omitempty"`
-	Meeting         string `json:"meeting,omitempty"`
+	BrowserState    string `json:"browser_state"`
+	Meeting         string `json:"meeting"`
+	ClockedInTask   string `json:"clocked_in_task"`
 }
 
 type Result struct {

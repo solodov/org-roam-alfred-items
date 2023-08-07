@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/solodov/org-roam-alfred-items/alfred"
 	"github.com/spf13/cobra"
@@ -39,6 +40,7 @@ func initVariables() (variables alfred.Variables) {
 	}{
 		{"browser_state", &variables.BrowserState, fetchBrowserState},
 		{"meeting", &variables.Meeting, fetchMeeting},
+		{"clocked_in_task", &variables.ClockedInTask, fetchClockedInTask},
 	} {
 		if val, exists := os.LookupEnv(varData.name); exists {
 			*varData.dest = val
@@ -82,6 +84,16 @@ func fetchBrowserState() (state string) {
 func fetchMeeting() string {
 	// TODO: implement this
 	return ""
+}
+
+func fetchClockedInTask() (t string) {
+	if out, err := exec.Command("emacsclient", "-e", "(org-clock-is-active)").Output(); err != nil {
+		fmt.Fprintf(os.Stderr, "calling emacsclient failed: %v\n", err)
+	} else if !strings.HasPrefix(string(out), "nil") {
+		t = "yes"
+	}
+	// TODO: perhaps return the name of the current task
+	return t
 }
 
 func init() {

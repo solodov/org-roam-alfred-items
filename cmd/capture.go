@@ -124,7 +124,7 @@ var captureActCmd = &cobra.Command{
 func fetchBrowserState() (state string) {
 	cmd := exec.Command("osascript", "-l", "JavaScript")
 	if stdin, err := cmd.StdinPipe(); err != nil {
-		fmt.Fprintf(os.Stderr, "starting osascript failed: %v\n", err)
+		log.Println("starting osascript failed:", err)
 	} else {
 		stdin.Write([]byte(`
 			const frontmostAppName = Application("System Events").applicationProcesses.where({frontmost: true}).name()[0];
@@ -143,7 +143,7 @@ func fetchBrowserState() (state string) {
 	  `))
 		stdin.Close()
 		if output, err := cmd.CombinedOutput(); err != nil {
-			fmt.Fprintf(os.Stderr, "osascript failed: %v", err)
+			log.Println("osascript failed:", err)
 		} else {
 			state = string(output)
 		}
@@ -158,7 +158,7 @@ func fetchMeeting() string {
 
 func fetchClockedInTask() (t string) {
 	if out, err := exec.Command("emacsclient", "-e", "(org-clock-is-active)").Output(); err != nil {
-		fmt.Fprintf(os.Stderr, "calling emacsclient failed: %v\n", err)
+		log.Println("calling emacsclient failed:", err)
 	} else if !strings.HasPrefix(string(out), "nil") {
 		t = "yes"
 	}

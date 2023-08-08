@@ -39,7 +39,7 @@ var captureItemsCmd = &cobra.Command{
 				addItem(fmt.Sprintf("capture meeting notes for %q", result.Variables.Meeting), "e", true)
 			}
 			addItem("capture note into inbox", "h", captureCmdArgs.query != "")
-			if result.Variables.ClockedInTask != "" {
+			if result.Variables.ClockedInTask != "nil" {
 				addItem("capture note for the clocked-in task", "c", captureCmdArgs.query != "")
 			}
 			if bs.Url != "" {
@@ -53,7 +53,7 @@ var captureItemsCmd = &cobra.Command{
 				addItem(fmt.Sprintf("capture meeting notes for %q", result.Variables.Meeting), "e", true)
 			}
 			addItem("capture note into inbox", "g", captureCmdArgs.query != "")
-			if result.Variables.ClockedInTask != "" {
+			if result.Variables.ClockedInTask != "nil" {
 				addItem("capture note for the clocked-in task", "c", captureCmdArgs.query != "")
 			}
 			if bs.Url != "" {
@@ -109,24 +109,30 @@ var captureActCmd = &cobra.Command{
 			json.Unmarshal([]byte(variables.BrowserState), &bs)
 		}
 
-		arg := os.Getenv("arg")
-		if arg == "ie" {
-			arg = "e"
+		template := os.Getenv("arg")
+		if template == "ie" {
+			// e is for meetings, immediate finish (the i prefix) doesn't apply,
+			// always edit meeting notes
+			template = "e"
+		} else if strings.HasPrefix(template, "ib") {
+			// immediate finish for browser capture has its own series of templates,
+			// alfred just adds i for simplicity.
+			template = "y" + strings.TrimPrefix(template, "ib")
 		}
-		arg = strings.Replace(arg, "ib", "y", 1)
 
 		q := url.Values{}
-		q.Set("template", arg)
+		q.Set("template", template)
 		if captureCmdArgs.query != "" {
-			switch arg {
+			switch template {
 			case "h", "ih", "g", "ig", "e", "f":
 				q.Set("body", captureCmdArgs.query)
 			default:
+				// Immediate finish means add some empty lines.
 				q.Set("body", captureCmdArgs.query+"\n\n")
 			}
 		}
-		switch arg[0] {
-		case 'b', 'y':
+		if template[0] == 'b' || template[0] == 'y' {
+			// These are browser capture templates, add URL and title.
 			q.Set("url", bs.Url)
 			q.Set("title", bs.Title)
 		}
@@ -134,14 +140,13 @@ var captureActCmd = &cobra.Command{
 		u := url.URL{Scheme: "org-protocol", Host: "capture", RawQuery: q.Encode()}
 
 		log.Printf("browser state: %#v\n", bs)
-		log.Printf("arg: %#v\n", arg)
+		log.Printf("arg: %#v\n", template)
 		log.Printf("query: %#v\n", captureCmdArgs.query)
 		log.Printf("url: %s\n", u.String())
 
-		switch arg[0] {
-		case 'i', 'y':
-			break
-		default:
+		if template[0] != 'i' && template[0] != 'y' {
+			// This is not an immediate finish template, raise emacs frame so
+			// continuing to edit is nicer.
 			if err := exec.Command("emacsclient", "-e", "(select-frame-set-input-focus (selected-frame))").Run(); err != nil {
 				log.Fatal("setting frame focus failed: ", err)
 			}

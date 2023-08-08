@@ -4,12 +4,17 @@ Copyright © 2023 Peter Solodov <solodov@gmail.com>
 package cmd
 
 import (
+	"bufio"
 	"fmt"
 	"log"
 	"net/url"
 	"os"
 	"os/exec"
+	"os/user"
+	"path/filepath"
+	"regexp"
 	"strings"
+	"time"
 
 	"github.com/solodov/org-roam-alfred-items/alfred"
 	"github.com/spf13/cobra"
@@ -190,9 +195,34 @@ func fetchBrowserState() (state string) {
 	return state
 }
 
-func fetchMeeting() string {
-	// TODO: implement this
-	return "nil"
+const orgTimeLayout = "2006-01-02 Mon 15:04"
+
+func fetchMeeting() (meeting string) {
+	meeting = "nil"
+	if f, err := os.Open(filepath.Join(captureCmdArgs.orgDir, "calendar", "calendar.org")); err != nil {
+		log.Printf("failed to open calendar file: %v", err)
+	} else {
+		defer f.Close()
+		now := time.Now()
+		lastMeeting := ""
+		headlineRe := regexp.MustCompile(`^\* \[\[([^\]]+)\]\[([^\]]+)\]\]`)
+		timeRe := regexp.MustCompile(`^:SCHEDULED: <(\d{4}-\d{2}-\d{2} \w{3} \d{2}:\d{2})>--<(\d{4}-\d{2}-\d{2} \w{3} \d{2}:\d{2})>`)
+		scanner := bufio.NewScanner(f)
+		scanner.Split(bufio.ScanLines)
+		for scanner.Scan() {
+			if groups := headlineRe.FindStringSubmatch(scanner.Text()); len(groups) > 0 {
+				lastMeeting = groups[2]
+			} else if groups := timeRe.FindStringSubmatch(scanner.Text()); len(groups) > 0 {
+				start, _ := time.ParseInLocation(orgTimeLayout, groups[1], time.Local)
+				end, _ := time.ParseInLocation(orgTimeLayout, groups[2], time.Local)
+				if start.Before(now) && end.After(now) {
+					meeting = lastMeeting
+					break
+				}
+			}
+		}
+	}
+	return meeting
 }
 
 func fetchClockedInTask() (t string) {
@@ -205,12 +235,14 @@ func fetchClockedInTask() (t string) {
 }
 
 var captureCmdArgs struct {
-	category, query string
+	category, query, orgDir string
 }
 
 func init() {
 	rootCmd.AddCommand(captureCmd)
 	captureCmd.AddCommand(captureItemsCmd)
+	u, _ := user.Current()
+	captureCmd.PersistentFlags().StringVar(&captureCmdArgs.orgDir, "org_dir", filepath.Join(u.HomeDir, "org"), "Path to the base org directory")
 	captureItemsCmd.Flags().StringVarP(&captureCmdArgs.category, "category", "c", "", "Category of capture items")
 	captureItemsCmd.MarkFlagRequired("category")
 	captureItemsCmd.Flags().StringVarP(&captureCmdArgs.query, "query", "q", "", "Alfred query")

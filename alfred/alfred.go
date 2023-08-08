@@ -1,5 +1,7 @@
 package alfred
 
+import "encoding/json"
+
 type Item struct {
 	Uid          string    `json:"uid,omitempty"`
 	Title        string    `json:"title,omitempty"`
@@ -34,4 +36,24 @@ type Result struct {
 type Text struct {
 	Copy      string `json:"copy"`
 	LargeType string `json:"largetype"`
+}
+
+type BrowserState struct {
+	Url, Title string
+}
+
+func (v Variables) DecodeBrowserState() (b *BrowserState) {
+	if v.BrowserState != "nil" {
+		b = &BrowserState{}
+		json.Unmarshal([]byte(v.BrowserState), b)
+	}
+	return b
+}
+
+func (b BrowserState) String() string {
+	if b.Title != "" {
+		return b.Title
+	} else {
+		return b.Url
+	}
 }

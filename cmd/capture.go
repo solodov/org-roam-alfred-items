@@ -4,7 +4,6 @@ Copyright © 2023 Peter Solodov <solodov@gmail.com>
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/url"
@@ -27,10 +26,7 @@ var captureItemsCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		result := alfred.Result{}
 		initVariables(&result.Variables)
-		bs := browserState{}
-		if result.Variables.BrowserState != "nil" {
-			json.Unmarshal([]byte(result.Variables.BrowserState), &bs)
-		}
+		browserState := result.Variables.DecodeBrowserState()
 		addItem := func(title, template string, valid bool) {
 			result.Items = append(result.Items, captureItem(title, template, valid))
 		}
@@ -42,8 +38,8 @@ var captureItemsCmd = &cobra.Command{
 			if result.Variables.ClockedInTask != "nil" {
 				addItem("capture note for the clocked-in task", "c", captureCmdArgs.query != "")
 			}
-			if bs.Url != "" {
-				addItem(fmt.Sprintf("capture %q into inbox", bs), "bh", true)
+			if browserState != nil {
+				addItem(fmt.Sprintf("capture %q into inbox", browserState), "bh", true)
 			}
 			if result.Variables.Meeting == "nil" {
 				addItem("capture meeting notes for unknown meeting", "e", true)
@@ -56,11 +52,11 @@ var captureItemsCmd = &cobra.Command{
 			if result.Variables.ClockedInTask != "nil" {
 				addItem("capture note for the clocked-in task", "c", captureCmdArgs.query != "")
 			}
-			if bs.Url != "" {
-				addItem(fmt.Sprintf("capture %q into inbox", bs), "bg", true)
-				addItem(fmt.Sprintf("capture %q for ads doc review", bs), "bd", true)
-				addItem(fmt.Sprintf("capture %q for ads fact", bs), "bf", true)
-				addItem(fmt.Sprintf("capture %q for career reading", bs), "bc", true)
+			if browserState != nil {
+				addItem(fmt.Sprintf("capture %q into inbox", browserState), "bg", true)
+				addItem(fmt.Sprintf("capture %q for ads doc review", browserState), "bd", true)
+				addItem(fmt.Sprintf("capture %q for ads fact", browserState), "bf", true)
+				addItem(fmt.Sprintf("capture %q for career reading", browserState), "bc", true)
 			}
 			addItem("capture ads fact", "f", true)
 			if result.Variables.Meeting == "nil" {
@@ -86,28 +82,13 @@ func captureItem(title, template string, valid bool) (item alfred.Item) {
 	return item
 }
 
-type browserState struct {
-	Url, Title string
-}
-
-func (b browserState) String() string {
-	if b.Title != "" {
-		return b.Title
-	} else {
-		return b.Url
-	}
-}
-
 var captureActCmd = &cobra.Command{
 	Use:  "act",
 	Args: cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
 		variables := alfred.Variables{}
 		initVariables(&variables)
-		bs := browserState{}
-		if variables.BrowserState != "nil" {
-			json.Unmarshal([]byte(variables.BrowserState), &bs)
-		}
+		browserState := variables.DecodeBrowserState()
 
 		template := os.Getenv("arg")
 		if template == "ie" {
@@ -132,14 +113,17 @@ var captureActCmd = &cobra.Command{
 			}
 		}
 		if template[0] == 'b' || template[0] == 'y' {
+			if browserState == nil {
+				log.Fatal("capture template requires browser state, but it's not provided")
+			}
 			// These are browser capture templates, add URL and title.
-			q.Set("url", bs.Url)
-			q.Set("title", bs.Title)
+			q.Set("url", browserState.Url)
+			q.Set("title", browserState.Title)
 		}
 
 		u := url.URL{Scheme: "org-protocol", Host: "capture", RawQuery: q.Encode()}
 
-		log.Printf("browser state: %#v\n", bs)
+		log.Printf("browser state: %#v\n", browserState)
 		log.Printf("arg: %#v\n", template)
 		log.Printf("query: %#v\n", captureCmdArgs.query)
 		log.Printf("url: %s\n", u.String())

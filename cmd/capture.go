@@ -98,24 +98,6 @@ func (b browserState) String() string {
 	}
 }
 
-func initVariables(variables *alfred.Variables) {
-	for _, varData := range []struct {
-		name   string
-		dest   *string
-		initFn func() string
-	}{
-		{"browser_state", &variables.BrowserState, fetchBrowserState},
-		{"meeting", &variables.Meeting, fetchMeeting},
-		{"clocked_in_task", &variables.ClockedInTask, fetchClockedInTask},
-	} {
-		if val, exists := os.LookupEnv(varData.name); exists {
-			*varData.dest = val
-		} else {
-			*varData.dest = varData.initFn()
-		}
-	}
-}
-
 var captureActCmd = &cobra.Command{
 	Use:  "act",
 	Args: cobra.NoArgs,
@@ -168,6 +150,24 @@ var captureActCmd = &cobra.Command{
 			log.Fatal("opening url failed: ", err)
 		}
 	},
+}
+
+func initVariables(variables *alfred.Variables) {
+	for _, varData := range []struct {
+		name   string
+		dest   *string
+		initFn func() string
+	}{
+		{"browser_state", &variables.BrowserState, fetchBrowserState},
+		{"meeting", &variables.Meeting, fetchMeeting},
+		{"clocked_in_task", &variables.ClockedInTask, fetchClockedInTask},
+	} {
+		if val, exists := os.LookupEnv(varData.name); exists {
+			*varData.dest = val
+		} else {
+			*varData.dest = varData.initFn()
+		}
+	}
 }
 
 func fetchBrowserState() (state string) {

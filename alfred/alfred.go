@@ -19,10 +19,9 @@ type Icon struct {
 type Variables struct {
 	BrowserOverride string `json:"browser_override,omitempty"`
 	Profile         string `json:"profile,omitempty"`
-	BrowserState    string `json:"browser_state"`
-	Meeting         string `json:"meeting"`
-	ClockedInTask   string `json:"clocked_in_task"`
-	Action          string `json:"action,omitempty"`
+	BrowserState    string `json:"browser_state,omitempty"`
+	Meeting         string `json:"meeting,omitempty"`
+	ClockedInTask   string `json:"clocked_in_task,omitempty"`
 	Template        string `json:"template,omitempty"`
 	Arg             string `json:"arg,omitempty"`
 }

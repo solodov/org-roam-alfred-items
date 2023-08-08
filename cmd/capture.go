@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/url"
 	"os"
 	"os/exec"
 	"strings"
@@ -27,42 +28,42 @@ var captureItemsCmd = &cobra.Command{
 		result := alfred.Result{}
 		initVariables(&result.Variables)
 		bs := browserState{}
-		if result.Variables.BrowserState != "" {
+		if result.Variables.BrowserState != "nil" {
 			json.Unmarshal([]byte(result.Variables.BrowserState), &bs)
 		}
 		addItem := func(title, template string, valid bool) {
 			result.Items = append(result.Items, captureItem(title, template, valid))
 		}
 		if captureCmdArgs.category == "home" {
-			if result.Variables.Meeting != "" {
-				addItem(fmt.Sprintf("capture meeting notes for \"%v\"", result.Variables.Meeting), "e", true)
+			if result.Variables.Meeting != "nil" {
+				addItem(fmt.Sprintf("capture meeting notes for %q", result.Variables.Meeting), "e", true)
 			}
 			addItem("capture note into inbox", "h", captureCmdArgs.query != "")
 			if result.Variables.ClockedInTask != "" {
 				addItem("capture note for the clocked-in task", "c", captureCmdArgs.query != "")
 			}
 			if bs.Url != "" {
-				addItem(fmt.Sprintf("capture \"%s\" into inbox", bs), "bh", true)
+				addItem(fmt.Sprintf("capture %q into inbox", bs), "bh", true)
 			}
-			if result.Variables.Meeting == "" {
+			if result.Variables.Meeting == "nil" {
 				addItem("capture meeting notes for unknown meeting", "e", true)
 			}
 		} else if captureCmdArgs.category == "goog" {
-			if result.Variables.Meeting != "" {
-				addItem(fmt.Sprintf("capture meeting notes for \"%v\"", result.Variables.Meeting), "e", true)
+			if result.Variables.Meeting != "nil" {
+				addItem(fmt.Sprintf("capture meeting notes for %q", result.Variables.Meeting), "e", true)
 			}
 			addItem("capture note into inbox", "g", captureCmdArgs.query != "")
 			if result.Variables.ClockedInTask != "" {
 				addItem("capture note for the clocked-in task", "c", captureCmdArgs.query != "")
 			}
 			if bs.Url != "" {
-				addItem(fmt.Sprintf("capture \"%s\" into inbox", bs), "bg", true)
-				addItem(fmt.Sprintf("capture \"%s\" for ads doc review", bs), "bd", true)
-				addItem(fmt.Sprintf("capture \"%s\" for ads fact", bs), "bf", true)
-				addItem(fmt.Sprintf("capture \"%s\" for career reading", bs), "bc", true)
+				addItem(fmt.Sprintf("capture %q into inbox", bs), "bg", true)
+				addItem(fmt.Sprintf("capture %q for ads doc review", bs), "bd", true)
+				addItem(fmt.Sprintf("capture %q for ads fact", bs), "bf", true)
+				addItem(fmt.Sprintf("capture %q for career reading", bs), "bc", true)
 			}
 			addItem("capture ads fact", "f", true)
-			if result.Variables.Meeting == "" {
+			if result.Variables.Meeting == "nil" {
 				addItem("capture meeting notes for unknown meeting", "e", true)
 			}
 		} else {
@@ -76,7 +77,6 @@ func captureItem(title, template string, valid bool) (item alfred.Item) {
 	item.Title = title
 	item.Arg = captureCmdArgs.query
 	item.Valid = valid
-	item.Variables.Action = "capture"
 	item.Variables.Arg = template
 	if template == "e" {
 		item.Subtitle = "continue editing"
@@ -116,15 +116,65 @@ func initVariables(variables *alfred.Variables) {
 	}
 }
 
-// TODO: implement this
 var captureActCmd = &cobra.Command{
-	Use: "act",
+	Use:  "act",
+	Args: cobra.NoArgs,
+	Run: func(cmd *cobra.Command, args []string) {
+		variables := alfred.Variables{}
+		initVariables(&variables)
+		bs := browserState{}
+		if variables.BrowserState != "nil" {
+			json.Unmarshal([]byte(variables.BrowserState), &bs)
+		}
+
+		arg := os.Getenv("arg")
+		if arg == "ie" {
+			arg = "e"
+		}
+		arg = strings.Replace(arg, "ib", "y", 1)
+
+		q := url.Values{}
+		q.Set("template", arg)
+		if captureCmdArgs.query != "" {
+			switch arg {
+			case "h", "ih", "g", "ig", "e", "f":
+				q.Set("body", captureCmdArgs.query)
+			default:
+				q.Set("body", captureCmdArgs.query+"\n\n")
+			}
+		}
+		switch arg[0] {
+		case 'b', 'y':
+			q.Set("url", bs.Url)
+			q.Set("title", bs.Title)
+		}
+
+		u := url.URL{Scheme: "org-protocol", Host: "capture", RawQuery: q.Encode()}
+
+		log.Printf("browser state: %#v\n", bs)
+		log.Printf("arg: %#v\n", arg)
+		log.Printf("query: %#v\n", captureCmdArgs.query)
+		log.Printf("url: %s\n", u.String())
+
+		switch arg[0] {
+		case 'i', 'y':
+			break
+		default:
+			if err := exec.Command("emacsclient", "-e", "(select-frame-set-input-focus (selected-frame))").Run(); err != nil {
+				log.Fatal("setting frame focus failed: ", err)
+			}
+		}
+		if err := exec.Command("emacsclient", "-n", u.String()).Run(); err != nil {
+			log.Fatal("opening url failed: ", err)
+		}
+	},
 }
 
 func fetchBrowserState() (state string) {
+	state = "nil"
 	cmd := exec.Command("osascript", "-l", "JavaScript")
 	if stdin, err := cmd.StdinPipe(); err != nil {
-		log.Println("starting osascript failed:", err)
+		log.Println("starting osascript failed: ", err)
 	} else {
 		stdin.Write([]byte(`
 			const frontmostAppName = Application("System Events").applicationProcesses.where({frontmost: true}).name()[0];
@@ -143,7 +193,7 @@ func fetchBrowserState() (state string) {
 	  `))
 		stdin.Close()
 		if output, err := cmd.CombinedOutput(); err != nil {
-			log.Println("osascript failed:", err)
+			log.Println("osascript failed: ", err)
 		} else {
 			state = string(output)
 		}
@@ -153,16 +203,15 @@ func fetchBrowserState() (state string) {
 
 func fetchMeeting() string {
 	// TODO: implement this
-	return ""
+	return "nil"
 }
 
 func fetchClockedInTask() (t string) {
 	if out, err := exec.Command("emacsclient", "-e", "(org-clock-is-active)").Output(); err != nil {
-		log.Println("calling emacsclient failed:", err)
-	} else if !strings.HasPrefix(string(out), "nil") {
-		t = "yes"
+		log.Println("calling emacsclient failed: ", err)
+	} else {
+		t = strings.TrimSuffix(string(out), "\n")
 	}
-	// TODO: perhaps return the name of the current task
 	return t
 }
 
@@ -177,5 +226,6 @@ func init() {
 	captureItemsCmd.MarkFlagRequired("category")
 	captureItemsCmd.Flags().StringVarP(&captureCmdArgs.query, "query", "q", "", "Alfred query")
 	captureItemsCmd.MarkFlagRequired("query")
+	captureActCmd.Flags().StringVarP(&captureCmdArgs.query, "query", "q", "", "Alfred query")
 	captureCmd.AddCommand(captureActCmd)
 }

@@ -112,7 +112,7 @@ func makeDynamicItems(alfredQuery string) (items []alfred.Item) {
 			items,
 			alfred.Item{
 				Title: fmt.Sprintf(`search moma for "%v"`, alfredQuery),
-				Arg:   "https://moma.corp.google.com/search?q" + alfredQuery,
+				Arg:   "https://moma.corp.google.com/search?q=" + alfredQuery,
 				Icon:  pickIcon("moma"),
 			},
 			alfred.Item{

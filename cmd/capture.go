@@ -4,7 +4,6 @@ Copyright © 2023 Peter Solodov <solodov@gmail.com>
 package cmd
 
 import (
-	"bufio"
 	"fmt"
 	"log"
 	"net/url"
@@ -12,9 +11,7 @@ import (
 	"os/exec"
 	"os/user"
 	"path/filepath"
-	"regexp"
 	"strings"
-	"time"
 
 	"github.com/solodov/org-roam-alfred-items/alfred"
 	"github.com/spf13/cobra"
@@ -46,9 +43,6 @@ var captureItemsCmd = &cobra.Command{
 			if browserState != nil {
 				addItem(fmt.Sprintf("capture %q into inbox", browserState), "bh", true)
 			}
-			if result.Variables.Meeting == "nil" {
-				addItem("capture meeting notes for unknown meeting", "e", true)
-			}
 		} else if captureCmdArgs.category == "goog" {
 			if result.Variables.Meeting != "nil" {
 				addItem(fmt.Sprintf("capture meeting notes for %q", result.Variables.Meeting), "e", true)
@@ -64,9 +58,6 @@ var captureItemsCmd = &cobra.Command{
 				addItem(fmt.Sprintf("capture %q for career reading", browserState), "bc", true)
 			}
 			addItem("capture ads fact", "f", true)
-			if result.Variables.Meeting == "nil" {
-				addItem("capture meeting notes for unknown meeting", "e", true)
-			}
 		} else {
 			log.Fatalf("unknown category: %v", captureCmdArgs.category)
 		}
@@ -195,41 +186,23 @@ func fetchBrowserState() (state string) {
 	return state
 }
 
-const orgTimeLayout = "2006-01-02 Mon 15:04"
-
 func fetchMeeting() (meeting string) {
 	meeting = "nil"
-	if f, err := os.Open(filepath.Join(captureCmdArgs.orgDir, "calendar", "calendar.org")); err != nil {
-		log.Printf("failed to open calendar file: %v", err)
-	} else {
-		defer f.Close()
-		now := time.Now()
-		lastMeeting := ""
-		headlineRe := regexp.MustCompile(`^\* \[\[([^\]]+)\]\[([^\]]+)\]\]`)
-		timeRe := regexp.MustCompile(`^:SCHEDULED: <(\d{4}-\d{2}-\d{2} \w{3} \d{2}:\d{2})>--<(\d{4}-\d{2}-\d{2} \w{3} \d{2}:\d{2})>`)
-		scanner := bufio.NewScanner(f)
-		scanner.Split(bufio.ScanLines)
-		for scanner.Scan() {
-			if groups := headlineRe.FindStringSubmatch(scanner.Text()); len(groups) > 0 {
-				lastMeeting = groups[2]
-			} else if groups := timeRe.FindStringSubmatch(scanner.Text()); len(groups) > 0 {
-				start, _ := time.ParseInLocation(orgTimeLayout, groups[1], time.Local)
-				end, _ := time.ParseInLocation(orgTimeLayout, groups[2], time.Local)
-				if start.Before(now) && end.After(now) {
-					meeting = lastMeeting
-					break
-				}
-			}
-		}
+	cmd := exec.Command("icalBuddy", "-nc", "-b", "", "eventsNow")
+	if output, err := cmd.Output(); err != nil {
+		log.Println("icalBuddy failed: ", err)
+	} else if s := strings.Trim(string(output), "\n"); s != "" {
+		meeting = strings.Split(s, "\n")[0]
 	}
 	return meeting
 }
 
 func fetchClockedInTask() (t string) {
+	t = "nil"
 	if out, err := exec.Command("emacsclient", "-e", "(org-clock-is-active)").Output(); err != nil {
 		log.Println("calling emacsclient failed: ", err)
 	} else {
-		t = strings.TrimSuffix(string(out), "\n")
+		t = strings.Trim(string(out), "\n")
 	}
 	return t
 }

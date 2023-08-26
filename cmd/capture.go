@@ -192,6 +192,9 @@ func fetchMeeting() (meeting string) {
 	if output, err := cmd.Output(); err != nil {
 		log.Println("icalBuddy failed: ", err)
 	} else if s := strings.Trim(string(output), "\n"); s != "" {
+		// This is a pretty naive implementation, it doesn't check calendar name and
+		// it doesn't care if there are multiple concurrent events. It's probably a
+		// safe assumption for now as I'm rarely double-booked.
 		meeting = strings.Split(s, "\n")[0]
 	}
 	return meeting

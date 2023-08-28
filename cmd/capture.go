@@ -188,9 +188,9 @@ func fetchBrowserState() (state string) {
 
 func fetchMeeting() (meeting string) {
 	meeting = "nil"
-	cmd := exec.Command("icalBuddy", "-nc", "-b", "", "eventsNow")
+	cmd := exec.Command("lce", "now")
 	if output, err := cmd.Output(); err != nil {
-		log.Println("icalBuddy failed: ", err)
+		log.Println("lce failed: ", err)
 	} else if s := strings.Trim(string(output), "\n"); s != "" {
 		// This is a pretty naive implementation, it doesn't check calendar name and
 		// it doesn't care if there are multiple concurrent events. It's probably a

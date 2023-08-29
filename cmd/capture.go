@@ -188,7 +188,7 @@ func fetchBrowserState() (state string) {
 
 func fetchMeeting() (meeting string) {
 	meeting = "nil"
-	cmd := exec.Command("lce", "now")
+	cmd := exec.Command("lce", "now", "-c", captureCmdArgs.category, "-o", "alfred")
 	if output, err := cmd.Output(); err != nil {
 		log.Println("lce failed: ", err)
 	} else if s := strings.Trim(string(output), "\n"); s != "" {
@@ -219,8 +219,8 @@ func init() {
 	captureCmd.AddCommand(captureItemsCmd)
 	u, _ := user.Current()
 	captureCmd.PersistentFlags().StringVar(&captureCmdArgs.orgDir, "org_dir", filepath.Join(u.HomeDir, "org"), "Path to the base org directory")
-	captureItemsCmd.Flags().StringVarP(&captureCmdArgs.category, "category", "c", "", "Category of capture items")
-	captureItemsCmd.MarkFlagRequired("category")
+	captureCmd.PersistentFlags().StringVarP(&captureCmdArgs.category, "category", "c", "", "Category of capture items")
+	captureCmd.MarkFlagRequired("category")
 	captureItemsCmd.Flags().StringVarP(&captureCmdArgs.query, "query", "q", "", "Alfred query")
 	captureItemsCmd.MarkFlagRequired("query")
 	captureActCmd.Flags().StringVarP(&captureCmdArgs.query, "query", "q", "", "Alfred query")

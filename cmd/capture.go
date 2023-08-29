@@ -34,7 +34,7 @@ var captureItemsCmd = &cobra.Command{
 		}
 		if captureCmdArgs.category == "home" {
 			if result.Variables.Meeting != "nil" {
-				addItem(fmt.Sprintf("capture meeting notes for %q", result.Variables.Meeting), "e", true)
+				addItem(fmt.Sprintf("capture meeting notes for %q", result.Variables.Meeting), "m", true)
 			}
 			addItem("capture note into inbox", "h", captureCmdArgs.query != "")
 			if result.Variables.ClockedInTask != "nil" {
@@ -91,6 +91,8 @@ var captureActCmd = &cobra.Command{
 			// e is for meetings, immediate finish (the i prefix) doesn't apply,
 			// always edit meeting notes
 			template = "e"
+		} else if template == "im" {
+			template = "m"
 		} else if strings.HasPrefix(template, "ib") {
 			// immediate finish for browser capture has its own series of templates,
 			// alfred just adds i for simplicity.
@@ -101,7 +103,7 @@ var captureActCmd = &cobra.Command{
 		q.Set("template", template)
 		if captureCmdArgs.query != "" {
 			switch template {
-			case "h", "ih", "g", "ig", "e", "f":
+			case "h", "ih", "g", "ig", "e", "m", "f":
 				q.Set("body", captureCmdArgs.query)
 			default:
 				// Immediate finish means add some empty lines.

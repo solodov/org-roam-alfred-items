@@ -190,7 +190,7 @@ func fetchBrowserState() (state string) {
 
 func fetchMeeting() (meeting string) {
 	meeting = "nil"
-	cmd := exec.Command("lce", "now", "-c", captureCmdArgs.category, "-o", "alfred")
+	cmd := exec.Command("lce", "now", "-c", "."+captureCmdArgs.category, "-o", "alfred")
 	if output, err := cmd.Output(); err != nil {
 		log.Println("lce failed: ", err)
 	} else if s := strings.Trim(string(output), "\n"); s != "" {

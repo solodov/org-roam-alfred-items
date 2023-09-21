@@ -16,6 +16,7 @@ import (
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/solodov/org-roam-alfred-items/alfred"
+	"github.com/solodov/org-roam-alfred-items/history"
 	"github.com/solodov/org-roam-alfred-items/roam"
 	"github.com/spf13/cobra"
 )
@@ -120,7 +121,7 @@ func makeDynamicItems(alfredQuery string) (items []alfred.Item) {
 				Save:      true,
 			},
 		)
-		// TODO: add items from history
+		items = append(items, history.FindMatchingItems(rootCmdArgs.trigger, alfredQuery)...)
 	} else if chromeCmdArgs.category == "goog" {
 		items = append(
 			items,
@@ -167,7 +168,7 @@ func makeDynamicItems(alfredQuery string) (items []alfred.Item) {
 				Save:      true,
 			},
 		)
-		// TODO: add items from history
+		items = append(items, history.FindMatchingItems(rootCmdArgs.trigger, alfredQuery)...)
 	}
 	return items
 }

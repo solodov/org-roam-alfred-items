@@ -2,11 +2,14 @@ package history
 
 import (
 	"database/sql"
+	"encoding/json"
 	"log"
 	"os"
 	"regexp"
+	"strings"
 
 	"github.com/mattn/go-sqlite3"
+	"github.com/solodov/org-roam-alfred-items/alfred"
 )
 
 var Path string
@@ -55,4 +58,38 @@ func init() {
 				return conn.RegisterFunc("regexp", regex, true)
 			},
 		})
+}
+
+func FindMatchingItems(trigger, alfredQuery string) (items []alfred.Item) {
+	db, err := Open()
+	if err != nil {
+		log.Println("failed to open history database: %v", err)
+		return items
+	}
+	regex := strings.Join(strings.Split(alfredQuery, " "), "|")
+	dbQuery := `SELECT ts, item FROM items WHERE trigger = ? AND query REGEXP ? ORDER BY ts LIMIT 40`
+	row, err := db.Query(dbQuery, trigger, regex)
+	if err != nil {
+		log.Println("history database query failed: %v", err)
+		return items
+	}
+	for row.Next() {
+		var ts int64
+		var itemStr string
+		err := row.Scan(&ts, &itemStr)
+		if err != nil {
+			log.Println("history db row scan failed: %v", err)
+			continue
+		}
+		var item alfred.Item
+		err = json.Unmarshal([]byte(itemStr), &item)
+		if err != nil {
+			log.Println("invalid item json: %v", err)
+			continue
+		}
+		// when := time.Now().Sub(time.Unix(ts, 0))
+		item.Title = "history: " + item.Title
+		items = append(items, item)
+	}
+	return items
 }

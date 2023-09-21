@@ -74,6 +74,7 @@ func FindMatchingItems(trigger, alfredQuery string) (items []alfred.Item) {
 		return items
 	}
 	for row.Next() {
+		// TODO: only inclure latest item for each trigger
 		var ts int64
 		var itemStr string
 		err := row.Scan(&ts, &itemStr)
@@ -87,6 +88,7 @@ func FindMatchingItems(trigger, alfredQuery string) (items []alfred.Item) {
 			log.Println("invalid item json: %v", err)
 			continue
 		}
+		// TODO: replace history with how long ago item was created
 		// when := time.Now().Sub(time.Unix(ts, 0))
 		item.Title = "history: " + item.Title
 		items = append(items, item)

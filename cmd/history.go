@@ -30,8 +30,8 @@ var addCmd = &cobra.Command{
 		}
 		defer db.Close()
 		if _, err := db.Exec(
-			"INSERT INTO items (ts, trigger, item) VALUES (?, ?, ?)",
-			time.Now().UnixMilli(), rootCmdArgs.trigger, addCmdArgs.item,
+			"INSERT INTO items (ts, trigger, query, item) VALUES (?, ?, ?, ?)",
+			time.Now().UnixMilli(), rootCmdArgs.trigger, addCmdArgs.query, addCmdArgs.item,
 		); err != nil {
 			log.Fatal(err)
 		}
@@ -39,11 +39,13 @@ var addCmd = &cobra.Command{
 }
 
 var addCmdArgs struct {
-	item string
+	item  string
+	query string
 }
 
 func init() {
 	rootCmd.AddCommand(historyCmd)
 	historyCmd.AddCommand(addCmd)
 	addCmd.Flags().StringVarP(&addCmdArgs.item, "item", "i", "", "JSON string of the alfred item to add to history")
+	addCmd.Flags().StringVar(&addCmdArgs.query, "query", "", "Alfred input query")
 }

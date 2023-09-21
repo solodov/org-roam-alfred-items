@@ -28,6 +28,7 @@ type Variables struct {
 	Template        string `json:"template,omitempty"`
 	Arg             string `json:"arg,omitempty"`
 	HistItem        string `json:"hist_item,omitempty"`
+	Query           string `json:"query"`
 }
 
 type Result struct {

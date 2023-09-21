@@ -21,6 +21,7 @@ const schema = `CREATE TABLE items (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   ts INTEGER NOT NULL,
   trigger VARCHAR(32) NOT NULL,
+  query VARCHAR(128) NOT NULL,
   item VARCHAR(1024) NOT NULL);
 PRAGMA auto_vacuum = "incremental";
 PRAGMA incremental_vacuum(10);`

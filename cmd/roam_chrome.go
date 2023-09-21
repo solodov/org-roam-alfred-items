@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/url"
@@ -72,6 +73,12 @@ var chromeCmd = &cobra.Command{
 		for i := range items {
 			items[i].Variables.Profile = chromeCmdArgs.category
 		}
+		for i := range items {
+			if items[i].Save {
+				res, _ := json.Marshal(items[i])
+				items[i].Variables.HistItem = string(res)
+			}
+		}
 		printJson(alfred.Result{Items: items})
 	},
 }
@@ -95,18 +102,22 @@ func makeDynamicItems(alfredQuery string) (items []alfred.Item) {
 				Title: fmt.Sprintf(`search google for "%v"`, alfredQuery),
 				Arg:   "https://www.google.com/search?q=" + alfredQuery,
 				Icon:  pickIcon("chrome"),
+				Save:  true,
 			},
 			alfred.Item{
 				Title: fmt.Sprintf(`search map for "%v"`, alfredQuery),
 				Arg:   "https://www.google.com/maps/search/" + alfredQuery,
 				Icon:  pickIcon("map"),
+				Save:  true,
 			},
 			alfred.Item{
 				Title: fmt.Sprintf(`search youtube for "%v"`, alfredQuery),
 				Arg:   "https://www.youtube.com/results?search_query=" + alfredQuery,
 				Icon:  pickIcon("youtube"),
+				Save:  true,
 			},
 		)
+		// TODO: add items from history
 	} else if chromeCmdArgs.category == "goog" {
 		items = append(
 			items,
@@ -114,33 +125,40 @@ func makeDynamicItems(alfredQuery string) (items []alfred.Item) {
 				Title: fmt.Sprintf(`search moma for "%v"`, alfredQuery),
 				Arg:   "https://moma.corp.google.com/search?q=" + alfredQuery,
 				Icon:  pickIcon("moma"),
+				Save:  true,
 			},
 			alfred.Item{
 				Title: fmt.Sprintf(`code search for "%v"`, alfredQuery),
 				Arg:   "https://source.corp.google.com/search?q=" + alfredQuery,
 				Icon:  pickIcon("cs"),
+				Save:  true,
 			},
 			alfred.Item{
 				Title: fmt.Sprintf(`search google for "%v"`, alfredQuery),
 				Arg:   "https://www.google.com/search?q=" + alfredQuery,
 				Icon:  pickIcon("search"),
+				Save:  true,
 			},
 			alfred.Item{
 				Title: fmt.Sprintf(`search glossary for "%v"`, alfredQuery),
 				Arg:   "https://moma.corp.google.com/search?hq=type:glossary&q=" + alfredQuery,
 				Icon:  pickIcon("glossary"),
+				Save:  true,
 			},
 			alfred.Item{
 				Title: fmt.Sprintf(`search who for "%v"`, alfredQuery),
 				Arg:   "https://moma.corp.google.com/search?hq=type:people&q=" + alfredQuery,
 				Icon:  pickIcon("who"),
+				Save:  true,
 			},
 			alfred.Item{
 				Title: fmt.Sprintf(`search go links for "%v"`, alfredQuery),
 				Arg:   "https://moma.corp.google.com/go2/search?q=" + alfredQuery,
 				Icon:  pickIcon("go_links"),
+				Save:  true,
 			},
 		)
+		// TODO: add items from history
 	}
 	return items
 }

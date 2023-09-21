@@ -12,6 +12,7 @@ type Item struct {
 	Icon         Icon      `json:"icon,omitempty"`
 	Variables    Variables `json:"variables,omitempty"`
 	Valid        bool      `json:"valid,omitempty"`
+	Save         bool      `json:"-"` // indicates whether this item should be saved in history
 }
 
 type Icon struct {
@@ -26,6 +27,7 @@ type Variables struct {
 	ClockedInTask   string `json:"clocked_in_task,omitempty"`
 	Template        string `json:"template,omitempty"`
 	Arg             string `json:"arg,omitempty"`
+	HistItem        string `json:"hist_item,omitempty"`
 }
 
 type Result struct {

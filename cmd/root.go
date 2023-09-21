@@ -11,6 +11,7 @@ import (
 	"os/user"
 	"path/filepath"
 
+	"github.com/solodov/org-roam-alfred-items/history"
 	"github.com/spf13/cobra"
 )
 
@@ -19,7 +20,8 @@ var rootCmd = &cobra.Command{
 }
 
 var rootCmdArgs struct {
-	pretty bool
+	pretty  bool
+	trigger string
 }
 
 var roamCmd = &cobra.Command{
@@ -58,6 +60,10 @@ func printJson(data any) {
 func init() {
 	u, _ := user.Current()
 	rootCmd.PersistentFlags().BoolVarP(&rootCmdArgs.pretty, "pretty", "p", false, "Pretty-print output")
+	// TODO: this needs to be a list so multiple triggers can be used. The use
+	// case is changing triggers and keeping history.
+	rootCmd.PersistentFlags().StringVarP(&rootCmdArgs.trigger, "trigger", "t", "", "Trigger for this call")
+	rootCmd.PersistentFlags().StringVar(&history.Path, "history_db_path", filepath.Join(u.HomeDir, ".local/share/alfred-items/history.db"), "Path to the items history database")
 	rootCmd.AddCommand(roamCmd)
 	roamCmd.PersistentFlags().StringVar(&roamCmdArgs.dbPath, "db_path", filepath.Join(u.HomeDir, "org/.roam.db"), "Path to the org roam database")
 }

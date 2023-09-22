@@ -58,7 +58,7 @@ var booksCmd = &cobra.Command{
 						Title:        data.Title,
 						Subtitle:     data.Url,
 						Arg:          data.Url,
-						Autocomplete: data.Url,
+						Autocomplete: data.Title,
 						Variables: alfred.Variables{
 							Profile: "home",
 							Query:   booksCmdArgs.query,

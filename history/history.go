@@ -102,18 +102,28 @@ ORDER BY ts LIMIT 40`
 	return items
 }
 
+const (
+	hour  = 60 * time.Minute
+	day   = 24 * hour
+	week  = 7 * day
+	month = 31 * week
+)
+
 func formatDuration(d time.Duration) string {
-	if d < time.Minute {
-		return "-minute"
-	} else if d < time.Hour {
-		return "-hour"
-	} else if d < 24*time.Hour {
-		return "-day"
-	} else if d < 7*24*time.Hour {
-		return "within a week"
-	} else if d < 31*7*24*time.Hour {
-		return "-month"
-	} else {
-		return "+month"
+	if d > month {
+		return "month+"
 	}
+	if d > week {
+		return "week+"
+	}
+	if d > day {
+		return "day+"
+	}
+	if d > hour {
+		return "hour+"
+	}
+	if d > time.Minute {
+		return "minute+"
+	}
+	return "-minute"
 }

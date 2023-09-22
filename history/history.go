@@ -67,17 +67,21 @@ func FindMatchingItems(trigger, alfredQuery string) (items []alfred.Item) {
 		return items
 	}
 	regex := strings.Join(strings.Split(alfredQuery, " "), "|")
-	dbQuery := `SELECT ts, item FROM items WHERE trigger = ? AND query REGEXP ? ORDER BY ts LIMIT 40`
+	dbQuery := `SELECT ts, trigger, item FROM items WHERE trigger = ? AND query REGEXP ? ORDER BY ts LIMIT 40`
 	row, err := db.Query(dbQuery, trigger, regex)
 	if err != nil {
 		log.Println("history database query failed: %v", err)
 		return items
 	}
+	seen := map[string]bool{}
 	for row.Next() {
-		// TODO: only inclure latest item for each trigger
 		var ts int64
-		var itemStr string
-		err := row.Scan(&ts, &itemStr)
+		var trigger, itemStr string
+		err := row.Scan(&ts, &trigger, &itemStr)
+		if _, found := seen[trigger]; found {
+			continue
+		}
+		seen[trigger] = true
 		if err != nil {
 			log.Println("history db row scan failed: %v", err)
 			continue

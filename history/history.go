@@ -3,10 +3,12 @@ package history
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/mattn/go-sqlite3"
 	"github.com/solodov/org-roam-alfred-items/alfred"
@@ -67,7 +69,9 @@ func FindMatchingItems(trigger, alfredQuery string) (items []alfred.Item) {
 		return items
 	}
 	regex := strings.Join(strings.Split(alfredQuery, " "), "|")
-	dbQuery := `SELECT ts, trigger, item FROM items WHERE trigger = ? AND query REGEXP ? ORDER BY ts LIMIT 40`
+	dbQuery := `SELECT ts, trigger, item FROM items
+WHERE trigger = ? AND query REGEXP ?
+ORDER BY ts LIMIT 40`
 	row, err := db.Query(dbQuery, trigger, regex)
 	if err != nil {
 		log.Println("history database query failed: %v", err)
@@ -92,10 +96,24 @@ func FindMatchingItems(trigger, alfredQuery string) (items []alfred.Item) {
 			log.Println("invalid item json: %v", err)
 			continue
 		}
-		// TODO: replace history with how long ago item was created
-		// when := time.Now().Sub(time.Unix(ts, 0))
-		item.Title = "history: " + item.Title
+		item.Title = fmt.Sprintf("%s: %s", formatDuration(time.Now().Sub(time.Unix(ts, 0))), item.Title)
 		items = append(items, item)
 	}
 	return items
+}
+
+func formatDuration(d time.Duration) string {
+	if d < time.Minute {
+		return "-minute"
+	} else if d < time.Hour {
+		return "-hour"
+	} else if d < 24*time.Hour {
+		return "-day"
+	} else if d < 7*24*time.Hour {
+		return "within a week"
+	} else if d < 31*7*24*time.Hour {
+		return "-month"
+	} else {
+		return "+month"
+	}
 }

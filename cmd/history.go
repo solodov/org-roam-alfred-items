@@ -31,7 +31,7 @@ var addCmd = &cobra.Command{
 		defer db.Close()
 		if _, err := db.Exec(
 			"INSERT INTO items (ts, trigger, query, item) VALUES (?, ?, ?, ?)",
-			time.Now().UnixMilli(), rootCmdArgs.trigger, addCmdArgs.query, addCmdArgs.item,
+			time.Now().Unix(), rootCmdArgs.trigger, addCmdArgs.query, addCmdArgs.item,
 		); err != nil {
 			log.Fatal(err)
 		}

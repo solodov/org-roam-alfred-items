@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path"
 	"regexp"
 	"strings"
 	"time"
@@ -32,10 +33,12 @@ PRAGMA auto_vacuum = "incremental";
 PRAGMA incremental_vacuum(10);`
 
 func Open() (*sql.DB, error) {
-	// TODO: create directory tree
 	initDb := false
 	if _, err := os.Stat(Path); err != nil {
 		log.Print("history database doesn't exist, initializing...")
+		if err := os.MkdirAll(path.Dir(Path), 0700); err != nil {
+			return nil, fmt.Errorf("failed to create directory for history database: %v", err)
+		}
 		initDb = true
 	}
 	db, err := sql.Open("sqlite3_extended", Path)

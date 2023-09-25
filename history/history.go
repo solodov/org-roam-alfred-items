@@ -68,12 +68,13 @@ func FindMatchingItems(trigger, alfredQuery string) (items []alfred.Item) {
 		log.Println("failed to open history database: %v", err)
 		return items
 	}
-	regex := strings.Join(strings.Split(alfredQuery, " "), "|")
-	dbQuery := `
-    SELECT ts, item FROM items
-    WHERE trigger = ? AND query REGEXP ?
-    ORDER BY ts DESC LIMIT 40`
-	row, err := db.Query(dbQuery, trigger, regex)
+	row, err := db.Query(
+		`SELECT ts, item FROM items
+     WHERE trigger = ? AND query REGEXP ?
+     ORDER BY ts DESC LIMIT 40`,
+		trigger,
+		strings.Join(strings.Split(alfredQuery, " "), "|"),
+	)
 	if err != nil {
 		log.Printf("history database query failed: %v\n", err)
 		return items

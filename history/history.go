@@ -75,26 +75,24 @@ func FindMatchingItems(trigger, alfredQuery string) (items []alfred.Item) {
     ORDER BY ts DESC LIMIT 40`
 	row, err := db.Query(dbQuery, trigger, regex)
 	if err != nil {
-		log.Println("history database query failed: %v", err)
+		log.Printf("history database query failed: %v\n", err)
 		return items
 	}
 	seen := map[string]bool{}
 	for row.Next() {
 		var ts int64
 		var itemStr string
-		err := row.Scan(&ts, &itemStr)
+		if err = row.Scan(&ts, &itemStr); err != nil {
+			log.Printf("history db row scan failed: %v\n", err)
+			continue
+		}
 		if _, found := seen[itemStr]; found {
 			continue
 		}
 		seen[itemStr] = true
-		if err != nil {
-			log.Println("history db row scan failed: %v", err)
-			continue
-		}
 		var item alfred.Item
-		err = json.Unmarshal([]byte(itemStr), &item)
-		if err != nil {
-			log.Println("invalid item json: %v", err)
+		if err := json.Unmarshal([]byte(itemStr), &item); err != nil {
+			log.Printf("invalid item json: %v\n", err)
 			continue
 		}
 		item.Title = fmt.Sprintf("%s: %s", formatDuration(time.Now().Sub(time.Unix(ts, 0))), item.Title)

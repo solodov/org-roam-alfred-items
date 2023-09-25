@@ -23,14 +23,15 @@ type Record struct {
 	Item    string
 }
 
-const schema = `CREATE TABLE items (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  ts INTEGER NOT NULL,
-  trigger VARCHAR(32) NOT NULL,
-  query VARCHAR(128) NOT NULL,
-  item VARCHAR(1024) NOT NULL);
-PRAGMA auto_vacuum = "incremental";
-PRAGMA incremental_vacuum(10);`
+const schema = `
+  CREATE TABLE items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ts INTEGER NOT NULL,
+    trigger VARCHAR(32) NOT NULL,
+    query VARCHAR(128) NOT NULL,
+    item VARCHAR(1024) NOT NULL);
+  PRAGMA auto_vacuum = "incremental";
+  PRAGMA incremental_vacuum(10);`
 
 func Open() (*sql.DB, error) {
 	initDb := false

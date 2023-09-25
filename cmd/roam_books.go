@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"database/sql"
-	"encoding/json"
 	"log"
 	"strings"
 
@@ -67,12 +66,7 @@ var booksCmd = &cobra.Command{
 				)
 			}
 		}
-		for i := range items {
-			if items[i].Save {
-				res, _ := json.Marshal(items[i])
-				items[i].Variables.HistItem = string(res)
-			}
-		}
+		history.FinalizeItems(&items)
 		printJson(alfred.Result{Items: items})
 	},
 }

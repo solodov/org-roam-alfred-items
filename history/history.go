@@ -135,7 +135,7 @@ func formatDuration(d time.Duration) string {
 func FinalizeItems(items *[]alfred.Item) {
 	for i := range *items {
 		if (*items)[i].Save {
-			if res, err := json.Marshal((*items)[i]); err != nil {
+			if res, err := json.Marshal((*items)[i]); err == nil {
 				(*items)[i].Variables.HistItem = string(res)
 			}
 		}

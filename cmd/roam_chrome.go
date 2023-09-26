@@ -171,6 +171,7 @@ func makeDynamicItems(alfredQuery string) (items []alfred.Item) {
 				Save:         true,
 			},
 		)
+		history.FinalizeItems(&items)
 		items = append(items, history.FindMatchingItems(rootCmdArgs.trigger, alfredQuery)...)
 	}
 	return items

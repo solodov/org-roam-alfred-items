@@ -33,9 +33,9 @@ var captureItemsCmd = &cobra.Command{
 			result.Items = append(result.Items, captureItem(title, template, valid))
 		}
 		if captureCmdArgs.category == "home" {
-			if result.Variables.Meeting != "nil" {
-				addItem(fmt.Sprintf("capture meeting notes for %q", result.Variables.Meeting), "m", true)
-			}
+			// if result.Variables.Meeting != "nil" {
+			// 	addItem(fmt.Sprintf("capture meeting notes for %q", result.Variables.Meeting), "m", true)
+			// }
 			addItem("capture note into inbox", "h", captureCmdArgs.query != "")
 			if result.Variables.ClockedInTask != "nil" {
 				addItem("capture note for the clocked-in task", "c", captureCmdArgs.query != "")
@@ -44,9 +44,9 @@ var captureItemsCmd = &cobra.Command{
 				addItem(fmt.Sprintf("capture %q into inbox", browserState), "bh", true)
 			}
 		} else if captureCmdArgs.category == "goog" {
-			if result.Variables.Meeting != "nil" {
-				addItem(fmt.Sprintf("capture meeting notes for %q", result.Variables.Meeting), "e", true)
-			}
+			// if result.Variables.Meeting != "nil" {
+			// 	addItem(fmt.Sprintf("capture meeting notes for %q", result.Variables.Meeting), "e", true)
+			// }
 			addItem("capture note into inbox", "g", captureCmdArgs.query != "")
 			if result.Variables.ClockedInTask != "nil" {
 				addItem("capture note for the clocked-in task", "c", captureCmdArgs.query != "")
@@ -146,7 +146,7 @@ func initVariables(variables *alfred.Variables) {
 		initFn func() string
 	}{
 		{"browser_state", &variables.BrowserState, fetchBrowserState},
-		{"meeting", &variables.Meeting, fetchMeeting},
+		// {"meeting", &variables.Meeting, fetchMeeting},
 		{"clocked_in_task", &variables.ClockedInTask, fetchClockedInTask},
 	} {
 		if val, exists := os.LookupEnv(varData.name); exists {

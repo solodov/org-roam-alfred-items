@@ -38,6 +38,7 @@ type Props struct {
 	Aliases         string
 	Icon            string
 	BrowserOverride string
+	NewWindow       string
 	Tags            Tags
 }
 
@@ -66,6 +67,7 @@ func (props *Props) Scan(src any) error {
 		"ALIASES":          &props.Aliases,
 		"ICON":             &props.Icon,
 		"BROWSER_OVERRIDE": &props.BrowserOverride,
+		"NEW_WINDOW":       &props.NewWindow,
 	}
 	if matches := simplePropertyRe.FindAllStringSubmatch(val, -1); len(matches) > 0 {
 		for _, groups := range matches {

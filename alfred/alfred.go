@@ -21,6 +21,7 @@ type Icon struct {
 
 type Variables struct {
 	BrowserOverride string `json:"browser_override,omitempty"`
+	NewWindow       string `json:"new_window,omitempty"`
 	Profile         string `json:"profile,omitempty"`
 	BrowserState    string `json:"browser_state,omitempty"`
 	Meeting         string `json:"meeting,omitempty"`

@@ -60,7 +60,7 @@ var chromeCmd = &cobra.Command{
 						Arg:          data.Url,
 						Autocomplete: data.Url,
 						Icon:         pickIcon(props.Icon, strings.ReplaceAll(data.Title, " ", "_")),
-						Variables:    alfred.Variables{BrowserOverride: props.BrowserOverride},
+						Variables:    alfred.Variables{BrowserOverride: props.BrowserOverride, NewWindow: props.NewWindow},
 					})
 				if len(items) == 1 {
 					items = append(items, makeDynamicItems(chromeCmdArgs.query)...)

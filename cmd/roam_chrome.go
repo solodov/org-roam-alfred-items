@@ -86,9 +86,11 @@ func makeDynamicItems(alfredQuery string) (items []alfred.Item) {
 		items = append(
 			items,
 			alfred.Item{
-				Title: fmt.Sprintf(`open "%v"`, alfredQuery),
-				Arg:   alfredQuery,
-				Icon:  pickIcon("chrome"),
+				Title:     fmt.Sprintf(`open "%v"`, alfredQuery),
+				Arg:       alfredQuery,
+				Icon:      pickIcon("chrome"),
+				Variables: alfred.Variables{Query: alfredQuery},
+				Save:      true,
 			})
 	} else if chromeCmdArgs.category == "home" {
 		items = append(

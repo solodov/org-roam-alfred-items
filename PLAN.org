@@ -1,3 +1,36 @@
+:PROPERTIES:
+:P:        alfred
+:ID:       8801E05A-B817-4941-A4B1-421E09EAC2CF
+:COOKIE_DATA: todo recursive
+:SORT_BY:  todo
+:SORT_BY+: priority
+:SORT_BY+: deadline
+:SORT_BY+: name
+:ORG_FIX_DISABLE_METADATA: children
+:END:
+#+title: alfred
+#+category: home
+#+startup: indent overview hidedrawers logdrawer
+#+filetags: :PROJECT:alfred:
+#+todo: PROG(s!) TODO(t!) PLAN(m!) IDEA(i!) | DONE(d!) DROP(c!)
+
+* TODO rename this to be the generic alfred tool with a bunch of subcommands
+- alfred roam elfeed ...
+- alfred roam nodes ...
+- alfred roam chrome ...
+- alfred translit
+- alfred capture
+- ...
+
+* IDEA use [[https://github.com/sqlc-dev/sqlc][sqlc-dev/sqlc]] to interact with databases
+:PROPERTIES:
+:ID:       44C44698-4705-4800-8B59-934A693FE677
+:CATEGORY: home
+:END:
+:LOGBOOK:
+- State "IDEA"       from "NEW"        [2023-11-05 Sun 16:38]
+:END:
+
 * DONE Chrome items
 CLOSED: [2023-07-11 Tue 21:20]
 Python implementation parses the file and extracts sections. However roam maintains all this
@@ -13,17 +46,11 @@ rewrite that will be fast enough. And it also doesn't require implementing org p
 This feature will require re-enabling roam for the chrome file, which will have a negative
 side-effect of making these links available in find UI. There seems to be a way to deal with
 this by creating a filter, see
-https://www.reddit.com/r/emacs/comments/p6w3dx/org_roam_can_i_filtercomplete_on_a_subset_based/. For
+[[https://www.reddit.com/r/emacs/comments/p6w3dx/org_roam_can_i_filtercomplete_on_a_subset_based/.][Reddit - Dive into anything]] For
 the purpose of this integration the filter will pass all nodes unless they are in chrome.org
 file and level is greater than 0.
+
 * DONE Elfeed links
 CLOSED: [2023-07-11 Tue 21:41]
 Elfeed links are similar to chrome links, they don't require parsing org files, roam
 database is good enough.
-* TODO rename this to be the generic alfred tool with a bunch of subcommands
-- alfred roam elfeed ...
-- alfred roam nodes ...
-- alfred roam chrome ...
-- alfred translit
-- alfred capture
-- ...

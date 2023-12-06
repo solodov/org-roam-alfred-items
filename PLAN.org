@@ -14,8 +14,13 @@
 #+filetags: :PROJECT:alfred:
 #+todo: PROG(s!) TODO(t!) PLAN(m!) IDEA(i!) | DONE(d!) DROP(c!)
 
-* TODO rename this to be the generic alfred tool with a bunch of subcommands
-DEADLINE: <2023-11-12 Sun -2d>
+* PLAN rename this to be the generic alfred tool with a bunch of subcommands
+:PROPERTIES:
+:ID:       930817D1-7DFA-45B1-84F3-891F1FC2C50D
+:END:
+:LOGBOOK:
+- State "PLAN"       from "TODO"       [2023-11-10 Fri 21:15]
+:END:
 - alfred roam elfeed ...
 - alfred roam nodes ...
 - alfred roam chrome ...
@@ -34,6 +39,9 @@ DEADLINE: <2023-11-12 Sun -2d>
 
 * DONE Chrome items
 CLOSED: [2023-07-11 Tue 21:20]
+:PROPERTIES:
+:ID:       60581691-7AAE-42E7-86BB-21D5CF4B8283
+:END:
 Python implementation parses the file and extracts sections. However roam maintains all this
 data in its database.
 
@@ -46,12 +54,14 @@ rewrite that will be fast enough. And it also doesn't require implementing org p
 
 This feature will require re-enabling roam for the chrome file, which will have a negative
 side-effect of making these links available in find UI. There seems to be a way to deal with
-this by creating a filter, see
-[[https://www.reddit.com/r/emacs/comments/p6w3dx/org_roam_can_i_filtercomplete_on_a_subset_based/.][Reddit - Dive into anything]] For
-the purpose of this integration the filter will pass all nodes unless they are in chrome.org
-file and level is greater than 0.
+this by creating a filter, see [[https://www.reddit.com/r/emacs/comments/p6w3dx/org_roam_can_i_filtercomplete_on_a_subset_based/.][Reddit - Dive into anything]] For the purpose of this
+integration the filter will pass all nodes unless they are in chrome.org file and level is
+greater than 0.
 
 * DONE Elfeed links
 CLOSED: [2023-07-11 Tue 21:41]
+:PROPERTIES:
+:ID:       20C3AD79-D7A1-49FD-8A31-9DEAD6E736F6
+:END:
 Elfeed links are similar to chrome links, they don't require parsing org files, roam
 database is good enough.
